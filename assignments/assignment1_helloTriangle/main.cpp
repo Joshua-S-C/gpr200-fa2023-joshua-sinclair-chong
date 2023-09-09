@@ -31,7 +31,7 @@ const char* vertexShaderSource = R"(
 	out vec4 Color;
 	void main(){
 		Color = vColor;
-		vec3 offset = vec3(0, sin(vPos.x + _Time), 0) * .5;
+		vec3 offset = vec3(cos(vPos.y + _Time * 2), sin(vPos.x + _Time), 0) * .5;
 		gl_Position = vec4(vPos + offset,1.0);
 	}
 )";
@@ -42,7 +42,7 @@ const char* fragmentShaderSource = R"(
 	in vec4 Color;
 	uniform float _Time = 1.0;
 	void main(){
-		FragColor = Color * abs(sin(_Time));
+		FragColor = Color + sin(_Time * 3);
 	}
 )";
 
