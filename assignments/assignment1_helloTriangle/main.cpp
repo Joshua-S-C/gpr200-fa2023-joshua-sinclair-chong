@@ -27,10 +27,12 @@ const char* vertexShaderSource = R"(
 	#version 450
 	layout(location = 0) in vec3 vPos;
 	layout(location = 1) in vec4 vColor;
+	layout(location = 3) uniform float _Time;
 	out vec4 Color;
 	void main(){
 		Color = vColor;
-		gl_Position = vec4(vPos,1.0);
+		vec3 offset = vec3(0, sin(vPos.x + _Time), 0) * .5;
+		gl_Position = vec4(vPos + offset,1.0);
 	}
 )";
 
@@ -40,7 +42,7 @@ const char* fragmentShaderSource = R"(
 	in vec4 Color;
 	uniform float _Time = 1.0;
 	void main(){
-		FragColor = Color;
+		FragColor = Color * abs(sin(_Time));
 	}
 )";
 
@@ -148,6 +150,10 @@ int main() {
 		glfwPollEvents();
 		glClearColor(0.6f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		float time = (float)glfwGetTime();
+		int timeLocation = glGetUniformLocation(shader, "_Time");
+		glUniform1f(timeLocation, time);
 
 		// Draw Calls
 		glUseProgram(shader);
