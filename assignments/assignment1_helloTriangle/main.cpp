@@ -8,13 +8,6 @@
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
 
-float vertices2[9] = {
-//	x		y		z
-	-0.5,	-0.5,	0.0, // Bottom Left
-	 0.5,	-0.5,	0.0, // Bottom Right
-	 0.0,	 0.5,	0.0	 // Top Centre
-};
-
 float vertices[21] = {
 	//x   //y  //z   //r  //g  //b  //a
 	-0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0, //Bottom left
@@ -145,7 +138,6 @@ int main() {
 	// OpenGL initialization
 	unsigned int shader = createShaderProgram(vertexShaderSource, fragmentShaderSource);
 	unsigned int vao = createVAO(vertices, 3);
-	unsigned int vao2 = createVAO(vertices2, 3);
 
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
@@ -161,7 +153,6 @@ int main() {
 		glUseProgram(shader);
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
 
 		glfwSwapBuffers(window);
 	}
