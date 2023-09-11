@@ -112,6 +112,7 @@ unsigned int createShaderProgram(const char* vertexShaderSource, const char* fra
 		char infoLog[512];
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		printf("Failed to link shader program: %s", infoLog);
+		return 0;
 	}
 	//The linked program now contains our compiled code, so we can delete these intermediate objects
 	glDeleteShader(vertexShader);
@@ -144,6 +145,7 @@ int main() {
 	// OpenGL initialization
 	unsigned int shader = createShaderProgram(vertexShaderSource, fragmentShaderSource);
 	unsigned int vao = createVAO(vertices, 3);
+	unsigned int vao2 = createVAO(vertices2, 3);
 
 	// Render Loop
 	while (!glfwWindowShouldClose(window)) {
@@ -159,6 +161,7 @@ int main() {
 		glUseProgram(shader);
 		glBindVertexArray(vao);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 
 		glfwSwapBuffers(window);
 	}
