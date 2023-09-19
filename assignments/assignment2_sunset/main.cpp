@@ -1,3 +1,5 @@
+// Okay here's the plan. 3 layers of waves undulating at the bottom while the sun rises in a circular form across the screen then the moon as well. 
+
 #include <stdio.h>
 #include <math.h>
 
