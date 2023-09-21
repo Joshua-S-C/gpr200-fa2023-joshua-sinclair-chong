@@ -24,19 +24,6 @@ float createWave(float f, float a, float offset, vec2 uv) {
 struct Wave {
 	float frequency, amplitude, offset;
 	vec2 uv;
-    
-    Wave (float _f, float _a, float _off, vec2 _uv) {
-        frequency = _f; 
-        amplitude = _a;
-        offset = _off;
-        uv = _uv;
-    }
-
-    float create() {
-        float waveLerp = offset + sin(uv.x * f + _Time) * a;
-        waveLerp = step(waveLerp,uv.y);
-        return waveLerp;
-    }
 };
 
 void main(){
