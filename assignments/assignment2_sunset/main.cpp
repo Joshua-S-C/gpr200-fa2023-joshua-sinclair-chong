@@ -10,11 +10,24 @@
 
 #include <jsc/shader.h>
 
-unsigned int createVAO(float* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
+struct Vertex {
+	float x, y, z;
+	float u, v;
+};
+
+unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
+
+
+Vertex vertices[4]{
+	{-1.0, -1.0,  1.0, 0, 0},	//BTM LFT
+	{ 1.0, -1.0,  1.0, 1, 0},	//BTM RGT
+	{ 1.0,  1.0,  1.0, 1, 1},	//TOP RGT
+	{-1.0,  1.0,  1.0, 0, 1}	//TOP LFT
+};
 
 float vertices2[9] = {
 	//x   //y  //z   
@@ -23,7 +36,7 @@ float vertices2[9] = {
 	 0.0,  0.5, 0.0 
 };
 
-float vertices[12] = {
+float vertices3[12] = {
 	// positive y is up
 	//x    y    z
 	-1.0, -1.0,  1.0, // BTM LFT
@@ -72,7 +85,7 @@ int main() {
 	// Create Shader & VAO
 	jsc::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	shader.use();
-	unsigned int vao = createVAO(vertices, 12, indices, 6);
+	unsigned int vao = createVAO(vertices, 4, indices, 6);
 	glBindVertexArray(vao);
 	
 	//Wireframe
@@ -119,11 +132,12 @@ int main() {
 
 
 
-unsigned int createVAO(float* vertexData, int numVertices, unsigned int* indicesData, int numIndices) {
+unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices) {
+	int stride = sizeof(Vertex);
+
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
-	int stride = 3;	// Will change based on the num of attributes
 
 	unsigned int ebo;
 	glGenBuffers(1, &ebo);
@@ -138,9 +152,13 @@ unsigned int createVAO(float* vertexData, int numVertices, unsigned int* indices
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numVertices * stride, vertexData, GL_STATIC_DRAW);
 
 
-	// Position attribute : 3 floats
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (const void*)0);
+	// Position : 3 floats
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void*)offsetof(Vertex,x));
 	glEnableVertexAttribArray(0);
+
+	// UV : 2 floats
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const void*)offsetof(Vertex,u));
+	glEnableVertexAttribArray(1);
 
 	return vao;
 }
