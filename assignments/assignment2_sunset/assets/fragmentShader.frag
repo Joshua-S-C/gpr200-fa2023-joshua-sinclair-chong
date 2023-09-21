@@ -36,7 +36,7 @@ struct Sun {
 
 	// Used as interpolation value for mix
 	float Lerp() {
-		float sunLerp = distance(uv, vec2(0.0, -.5 + sin(_Time))); 
+		float sunLerp = distance(uv, vec2(0.0, -.5 + sin(time))); 
 		sunLerp = smoothstep(inner + radius, inner, sunLerp);
 		return sunLerp;
 	}
