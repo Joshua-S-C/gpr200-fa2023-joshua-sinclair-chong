@@ -10,6 +10,6 @@ layout(location = 3) in float _Time;
 
 void main(){
 	uv = _uv;
-	vec3 offset = vec3(cos(_pos.y + _Time * 2), sin(_pos.x + _Time), 0) * .5;
+	//vec3 offset = vec3(cos(_pos.y + _Time * 2), sin(_pos.x + _Time), 0) * .5;
 	gl_Position = vec4(_pos,1.0);
 }

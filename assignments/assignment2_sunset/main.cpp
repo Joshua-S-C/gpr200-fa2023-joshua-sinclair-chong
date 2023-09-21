@@ -79,9 +79,17 @@ int main() {
 	//Shaded
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+/*UNIFORMS---------------------------------------------------------------*/
+
 	// BG Uniforms
 	float bgClrTop[3] = { 0.0,1.0,1.0 };
 	float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
+	
+	// Sun Uniforms
+	float sunRadius = .2;
+	float sunInner = .3;
+	float sunClr[3] = { 1.0,1.0,0.0 };
+
 	// Wave 1 Uniforms
 	float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
 	float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
@@ -101,6 +109,11 @@ int main() {
 		shader.setVec3("bgClrTop", bgClrTop[0], bgClrTop[1], bgClrTop[2]);
 		shader.setVec3("bgClrBtm", bgClrBtm[0], bgClrBtm[1], bgClrBtm[2]);
 
+		// Sun Uniforms
+		shader.setFloat("sunRadius", sunRadius);
+		shader.setFloat("sunInner", sunInner);
+		shader.setVec3("sunClr", sunClr[0], sunClr[1], sunClr[2]);
+
 		// Wave 1 Uniforms
 		shader.setVec3("wave1ClrTop", wave1ClrTop[0], wave1ClrTop[1], wave1ClrTop[2]);
 		shader.setVec3("wave1ClrBtm", wave1ClrBtm[0], wave1ClrBtm[1], wave1ClrBtm[2]);
@@ -119,11 +132,14 @@ int main() {
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
 			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 
-			//Orgnaize the UI / uniforms by object (wave, bg, sun, etc)
-			
 			// BG Uniforms 
 			ImGui::ColorEdit3("bgClrTop", bgClrTop);
 			ImGui::ColorEdit3("bgClrBtm", bgClrBtm);
+
+			// Sun Uniforms
+			ImGui::SliderFloat("sunRadius", &sunRadius, 0.0f, 5.0f);
+			ImGui::SliderFloat("sunInner", &sunInner, 0.0f, 1.0f);
+			ImGui::ColorEdit3("sunClr", sunClr);
 
 			// Wave 1 Uniforms
 			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);

@@ -14,9 +14,33 @@ uniform float _Time;
 uniform vec3 bgClrTop;
 uniform vec3 bgClrBtm;
 
+// Sun Uniforms
+uniform float sunRadius;
+uniform float sunInner;
+uniform vec3 sunClr;
+
 // Wave 1 Uniforms
 uniform vec3 wave1ClrTop;
 uniform vec3 wave1ClrBtm;
+
+struct Sun {
+	float radius, inner;
+	vec2 uv;
+	vec3 clr;
+	float time;
+
+	// Used as start of range for mix. This isn't needed lol
+	vec3 Color() {
+		return clr;
+	}
+
+	// Used as interpolation value for mix
+	float Lerp() {
+		float sunLerp = distance(uv, vec2(0.0, -.5 + sin(_Time))); 
+		sunLerp = smoothstep(inner + radius, inner, sunLerp);
+		return sunLerp;
+	}
+};
 
 struct Wave {
 	float f, a, offset;
@@ -48,20 +72,27 @@ void main(){
 	vec3 color = mix(bgClrBtm, bgClrTop, uv.y + sin(_Time));
 
 	// Sun
-	float sunRadius = .2;
-	float sunInner = .3;    
-	float sunOutter = sunInner + sunRadius; 
+	Sun sun = Sun(sunRadius, sunInner, uv, sunClr, _Time);
 
+	// Currrently the refactored way doesn't work. Something wrong with sun.Lerp()
+	// I think Time is not updating or someting cuz the sun stays in one place
+	// Yea that was it
+	//float sunRadius = .2;
+	//float sunInner = .3;    
+	//float sunOutter = sunInner + sunRadius; 
 	// Coords of circle origin, this needs to be a uniform
 	float sunLerp = distance(uv, vec2(0.0, -.5 + sin(_Time))); 
-	sunLerp = smoothstep(sunOutter, sunInner, sunLerp);
-	vec3 sunClr = vec3(1.0,1.0,0.0); 
+	sunLerp = smoothstep(sunInner + sunRadius, sunInner, sunLerp);
+	//vec3 sunClr = vec3(1.0,1.0,0.0); 
+
 
 	// Wave 1
 	Wave wave1 = Wave(3.0, 0.2 * sin(_Time), -0.2, uv, wave1ClrBtm, wave1ClrTop); 
 
 	// Mixing Colours
-	color = mix(color, sunClr, sunLerp);
+	color = mix(color, sun.clr, sun.Lerp());
+	//color = mix(color, sun.clr, sunLerp);
+	//color = mix(color, sunClr, sunLerp);
 	color = mix(wave1.FGColor(), color, wave1.Lerp());
 
 	// Output
