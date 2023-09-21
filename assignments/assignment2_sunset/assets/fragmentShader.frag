@@ -6,6 +6,7 @@ in vec2 uv;
 //in vec2 fragCoord;
 out vec4 FragColor;
 
+// Misc. Uniforms
 uniform vec2 _Resolution;
 uniform vec3 _Color;
 uniform float _Brightness;
@@ -19,16 +20,32 @@ uniform vec3 bgClrBtm;
 uniform vec3 wave1ClrTop;
 uniform vec3 wave1ClrBtm;
 
-float createWave(float f, float a, float offset, vec2 uv) {
-	float waveLerp = offset + sin(uv.x * f + _Time) * a;
-	waveLerp = step(waveLerp,uv.y);
-	return waveLerp;
-}
+// Now depreciated :D
+//float createWave(float f, float a, float offset, vec2 uv) {
+//	float waveLerp = offset + sin(uv.x * f + _Time) * a;
+//	waveLerp = step(waveLerp,uv.y);
+//	return waveLerp;
+//}
+
 
 struct Wave {
-	float frequency, amplitude, offset;
+	float f, a, offset;
 	vec2 uv;
+	vec3 clrBtm, clrTop;
+
+	// Used as start of range for mix
+	vec3 FGColor() {
+		return mix(clrTop, clrBtm, -uv.y);
+	}
+
+	// Used as interpolation value for mix
+	float Lerp() {
+		float waveLerp = offset + sin(uv.x * f + _Time) * a;
+		waveLerp = step(waveLerp,uv.y);
+		return waveLerp;
+	}
 };
+
 
 void main(){
 	// Fix screen and remap UV coords
@@ -56,12 +73,16 @@ void main(){
 	//vec3 wave1ClrTop;
 	//vec3 wave1ClrTop = vec3(0.2,0.50,0.80);
 	//vec3 wave1ClrBtm = vec3(0.30,0.65,1.00);
-	float wave1Lerp = createWave(3.0, 0.2 * sin(_Time), -0.2, uv);
-	vec3 wave1FgClr = mix(wave1ClrTop, wave1ClrBtm, -uv.y); 
+	//float wave1Lerp = createWave(3.0, 0.2 * sin(_Time), -0.2, uv);
+	//vec3 wave1FgClr = mix(wave1.clrTop, wave1.clrBtm, -uv.y); 
+	// All this has been refactored :3 ^
+
+	//Construct wave
+	Wave wave1 = Wave(3.0, 0.2 * sin(_Time), -0.2, uv, wave1ClrBtm, wave1ClrTop); 
 
 	// Mixing Colours
 	color = mix(color, sunClr, sunLerp);
-	color = mix(wave1FgClr, color, wave1Lerp);
+	color = mix(wave1.FGColor(), color, wave1.Lerp());
 
 	// Output
 	FragColor = vec4(color,1.0);

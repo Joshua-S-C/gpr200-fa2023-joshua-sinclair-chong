@@ -16,6 +16,12 @@ struct Vertex {
 	float u, v;
 };
 
+struct WaveStruct {
+	float f, a, offset;
+	float topClr[3] = {};
+	float btmClr[3] = {};
+};
+
 // Functions
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -37,31 +43,7 @@ unsigned int indices[6] = {
 	//I am the most intelligent human being for taking only 30 minutes to realize that the indexes start at 0 :P
 };
 
-//float vertices2[9] = {
-//	//x   //y  //z   
-//	-0.5, -0.5, 0.0, 
-//	 0.5, -0.5, 0.0,
-//	 0.0,  0.5, 0.0 
-//};
-//float vertices3[12] = {
-//	// positive y is up
-//	//x    y    z
-//	-1.0, -1.0,  1.0, // BTM LFT
-//	 1.0, -1.0,  1.0, // BTM RGT
-//	 1.0,  1.0,  1.0, // TOP RGT
-//	-1.0,  1.0,  1.0, // TOP LFT
-//};
-
-
 float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
-
-// BG Uniforms
-float bgClrTop[3] = { 0.0,1.0,1.0 };
-float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
-// Wave 1 Uniforms
-float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
-float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
-
 float triangleBrightness = 1.0f;
 bool showImGUIDemoWindow = true;
 
@@ -103,6 +85,12 @@ int main() {
 	//Shaded
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+	// BG Uniforms
+	float bgClrTop[3] = { 0.0,1.0,1.0 };
+	float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
+	// Wave 1 Uniforms
+	float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
+	float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
