@@ -54,13 +54,9 @@ int main() {
 	ImGui_ImplOpenGL3_Init();
 
 	// Create Shader & VAO
-	std::string vertexShaderSource = jsc::loadShaderSourceFromFile("assets/vertexShader.vert");
-	std::string fragmentShaderSource = jsc::loadShaderSourceFromFile("assets/fragmentShader.frag");
-
-	unsigned int shader = jsc::createShaderProgram(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
+	jsc::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	shader.use();
 	unsigned int vao = createVAO(vertices, 3);
-
-	glUseProgram(shader);
 	glBindVertexArray(vao);
 
 	while (!glfwWindowShouldClose(window)) {
@@ -69,8 +65,8 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//Set uniforms
-		glUniform3f(glGetUniformLocation(shader, "_Color"), triangleColor[0], triangleColor[1], triangleColor[2]);
-		glUniform1f(glGetUniformLocation(shader,"_Brightness"), triangleBrightness);
+		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
+		shader.setFloat("_Brightness", triangleBrightness);
 
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
