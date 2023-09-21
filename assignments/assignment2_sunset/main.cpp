@@ -16,12 +16,6 @@ struct Vertex {
 	float u, v;
 };
 
-struct WaveStruct {
-	float f, a, offset;
-	float topClr[3] = {};
-	float btmClr[3] = {};
-};
-
 // Functions
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -120,10 +114,12 @@ int main() {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
+			// Misc Uniforms
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
+			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 
-//Orgnaize the UI / uniforms by object (wave, bg, sun, etc)
+			//Orgnaize the UI / uniforms by object (wave, bg, sun, etc)
 			
 			// BG Uniforms 
 			ImGui::ColorEdit3("bgClrTop", bgClrTop);
@@ -133,7 +129,6 @@ int main() {
 			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);
 			ImGui::ColorEdit3("wave1ClrBtm", wave1ClrBtm);
 
-			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 
 			ImGui::End();
 			if (showImGUIDemoWindow) {
