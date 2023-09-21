@@ -10,18 +10,34 @@
 
 #include <jsc/shader.h>
 
-unsigned int createVAO(float* vertexData, int numVertices);
+unsigned int createVAO(float* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 720;
 
-float vertices[9] = {
+float vertices2[9] = {
 	//x   //y  //z   
 	-0.5, -0.5, 0.0, 
 	 0.5, -0.5, 0.0,
 	 0.0,  0.5, 0.0 
 };
+
+float vertices[12] = {
+	// positive y is up
+	//x    y    z
+	-1.0, -1.0,  1.0, // BTM LFT
+	 1.0, -1.0,  1.0, // BTM RGT
+	 1.0,  1.0,  1.0, // TOP RGT
+	-1.0,  1.0,  1.0, // TOP LFT
+};
+
+unsigned int indices[6] = {
+	0, 1, 2, //Triangle 1. BTM RGHT
+	0, 2, 3  //Triangle 2. TOP LFT
+	//I am the most intelligent human being for taking only 30 minutes to realize that the indexes start at 0 :P
+};
+
 
 float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
 float triangleBrightness = 1.0f;
@@ -34,7 +50,7 @@ int main() {
 		return 1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello Triangle", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "A beautiful sunset :3", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -56,8 +72,14 @@ int main() {
 	// Create Shader & VAO
 	jsc::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	shader.use();
-	unsigned int vao = createVAO(vertices, 3);
+	unsigned int vao = createVAO(vertices, 12, indices, 6);
 	glBindVertexArray(vao);
+	
+	//Wireframe
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//Shaded
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -68,7 +90,8 @@ int main() {
 		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
 		shader.setFloat("_Brightness", triangleBrightness);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// Draw Calls
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
 		//Render UI
 		{
@@ -96,20 +119,27 @@ int main() {
 
 
 
-unsigned int createVAO(float* vertexData, int numVertices) {
+unsigned int createVAO(float* vertexData, int numVertices, unsigned int* indicesData, int numIndices) {
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
+	int stride = 3;	// Will change based on the num of attributes
+
+	unsigned int ebo;
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * numIndices, indicesData, GL_STATIC_DRAW);
 
 	//Define a new buffer id
 	unsigned int vbo;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	//Allocate space for + send vertex data to GPU.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numVertices * 3, vertexData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * numVertices * stride, vertexData, GL_STATIC_DRAW);
 
-	//Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (const void*)0);
+
+	// Position attribute : 3 floats
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * stride, (const void*)0);
 	glEnableVertexAttribArray(0);
 
 	return vao;
