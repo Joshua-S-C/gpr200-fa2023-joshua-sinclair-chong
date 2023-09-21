@@ -9,7 +9,9 @@ uniform vec3 _Color;
 uniform float _Brightness;
 uniform float _Time;
 
+// Wave uniforms
 uniform vec3 wave1ClrTop;
+uniform vec3 wave1ClrBtm;
 
 float createWave(float f, float a, float offset, vec2 uv) {
     float waveLerp = offset + sin(uv.x * f + _Time) * a;
@@ -42,9 +44,9 @@ void main(){
     // Wave 1
     //vec3 wave1ClrTop;
     //vec3 wave1ClrTop = vec3(0.2,0.50,0.80);
-    vec3 wave1ClrBtm = vec3(0.30,0.65,1.00);
+    //vec3 wave1ClrBtm = vec3(0.30,0.65,1.00);
     float wave1Lerp = createWave(3.0, 0.2 * sin(_Time), -0.2, uv);
-    vec3 wave1FgClr = mix(wave1ClrTop, wave1ClrBtm, uv.y); 
+    vec3 wave1FgClr = mix(wave1ClrTop, wave1ClrBtm, -uv.y); 
 
     // Mixing Colours
     color = mix(color, sunClr, sunLerp);

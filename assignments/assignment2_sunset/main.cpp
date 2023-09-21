@@ -53,6 +53,9 @@ unsigned int indices[6] = {
 
 
 float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
+float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
+float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
+
 float triangleBrightness = 1.0f;
 bool showImGUIDemoWindow = true;
 
@@ -104,7 +107,8 @@ int main() {
 		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
 		shader.setFloat("_Time", (float)glfwGetTime());
 		shader.setVec2("_Resolution", SCREEN_WIDTH, SCREEN_HEIGHT);
-		shader.setVec3("wave1ClrTop", triangleColor[0], triangleColor[1], triangleColor[2]);
+		shader.setVec3("wave1ClrTop", wave1ClrTop[0], wave1ClrTop[1], wave1ClrTop[2]);
+		shader.setVec3("wave1ClrBtm", wave1ClrBtm[0], wave1ClrBtm[1], wave1ClrBtm[2]);
 
 		// Draw Calls
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
@@ -117,7 +121,10 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
-			ImGui::ColorEdit3("wave1ClrTop", triangleColor);
+
+			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);
+			ImGui::ColorEdit3("wave1ClrBtm", wave1ClrBtm);
+
 			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 			ImGui::End();
 			if (showImGUIDemoWindow) {
