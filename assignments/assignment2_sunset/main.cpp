@@ -104,6 +104,7 @@ int main() {
 		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
 		shader.setFloat("_Time", (float)glfwGetTime());
 		shader.setVec2("_Resolution", SCREEN_WIDTH, SCREEN_HEIGHT);
+		shader.setVec3("wave1ClrTop", triangleColor[0], triangleColor[1], triangleColor[2]);
 
 		// Draw Calls
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
@@ -116,7 +117,7 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
-			ImGui::ColorEdit3("Color", triangleColor);
+			ImGui::ColorEdit3("wave1ClrTop", triangleColor);
 			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 			ImGui::End();
 			if (showImGUIDemoWindow) {
