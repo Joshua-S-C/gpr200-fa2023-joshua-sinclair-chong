@@ -15,6 +15,7 @@ struct Vertex {
 	float u, v;
 };
 
+
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -92,7 +93,7 @@ int main() {
 	glBindVertexArray(vao);
 	
 	//Wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	//Shaded
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -121,7 +122,11 @@ int main() {
 
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
+//Orgnaize the UI / uniforms by object (wave, bg, sun, etc)
+			// BG Uniforms (does this work with time?, maybe have a toggle for it or add time onto it somehow)
+			
 
+			// Wave 1 Uniforms
 			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);
 			ImGui::ColorEdit3("wave1ClrBtm", wave1ClrBtm);
 
