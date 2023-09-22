@@ -5,10 +5,8 @@ in vec2 uv;
 out vec4 FragColor;
 
 // Misc. Uniforms
-uniform vec2 _Resolution;
-uniform vec3 _Color;
-uniform float _Brightness;
 uniform float _Time;
+uniform vec2 _Resolution;
 
 // BG Colour Uniforms
 uniform vec3 bgClrTop;
@@ -22,12 +20,15 @@ uniform vec3 sunClr;
 // Wave 1 Uniforms
 uniform vec3 wave1ClrTop;
 uniform vec3 wave1ClrBtm;
+uniform float wave1F;
+uniform float wave1A;
+uniform float wave1O;
 
 struct Sun {
 	float radius, inner;
 	vec2 uv;
 	vec3 clr;
-	float time;
+	float time;	//This struct can't access _Time?
 
 	// Used as start of range for mix. This isn't needed lol
 	vec3 Color() {
@@ -46,15 +47,16 @@ struct Wave {
 	float f, a, offset;
 	vec2 uv;
 	vec3 clrBtm, clrTop;
+	float time; //Yea _Time doesn't work
 
-	// Used as start of range for mix
+	// Used as start of range for mix.
 	vec3 FGColor() {
 		return mix(clrTop, clrBtm, -uv.y);
 	}
 
 	// Used as interpolation value for mix
 	float Lerp() {
-		float waveLerp = offset + sin(uv.x * f + _Time) * a;
+		float waveLerp = offset + sin(uv.x * f + time) * a;
 		waveLerp = step(waveLerp,uv.y);
 		return waveLerp;
 	}
@@ -74,9 +76,6 @@ void main(){
 	// Sun
 	Sun sun = Sun(sunRadius, sunInner, uv, sunClr, _Time);
 
-	// Currrently the refactored way doesn't work. Something wrong with sun.Lerp()
-	// I think Time is not updating or someting cuz the sun stays in one place
-	// Yea that was it
 	//float sunRadius = .2;
 	//float sunInner = .3;    
 	//float sunOutter = sunInner + sunRadius; 
@@ -87,7 +86,8 @@ void main(){
 
 
 	// Wave 1
-	Wave wave1 = Wave(3.0, 0.2 * sin(_Time), -0.2, uv, wave1ClrBtm, wave1ClrTop); 
+	//Wave wave1 = Wave(3.0, 0.2 * sin(_Time), -0.2, uv, wave1ClrBtm, wave1ClrTop); 
+	Wave wave1 = Wave(wave1F, wave1A * sin(_Time), wave1O, uv, wave1ClrBtm, wave1ClrTop, _Time); 
 
 	// Mixing Colours
 	color = mix(color, sun.clr, sun.Lerp());

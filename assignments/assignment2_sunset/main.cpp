@@ -10,7 +10,7 @@
 
 #include <jsc/shader.h>
 
-//Structs
+// Structs
 struct Vertex {
 	float x, y, z;
 	float u, v;
@@ -30,19 +30,16 @@ Vertex vertices[4]{
 	{ 1.0,  1.0,  1.0, 1, 1},	//TOP RGT
 	{-1.0,  1.0,  1.0, 0, 1}	//TOP LFT
 };
-
 unsigned int indices[6] = {
 	0, 1, 2, //Triangle 1. BTM RGHT
 	0, 2, 3  //Triangle 2. TOP LFT
 	//I am the most intelligent human being for taking only 30 minutes to realize that the indexes start at 0 :P
 };
-
-float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
-float triangleBrightness = 1.0f;
 bool showImGUIDemoWindow = true;
 
+
 int main() {
-	// Initialize Window
+// Initialize Window ----------------------------------------------------*/
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -62,25 +59,23 @@ int main() {
 		return 1;
 	}
 
-	//Initialize ImGUI
+// Initialize ImGUI -----------------------------------------------------*/
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	// Shader & VAO
+// Shader & VAO ---------------------------------------------------------*/
 	jsc::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	shader.use();
 	unsigned int vao = createVAO(vertices, 4, indices, 6);
 	glBindVertexArray(vao);
-	
-	//Wireframe
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//Shaded
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-/*UNIFORMS---------------------------------------------------------------*/
+// Render Mode ----------------------------------------------------------*/
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);//Wireframe
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	//Shaded
 
+// UNIFORMS -------------------------------------------------------------*/
 	// BG Uniforms
 	float bgClrTop[3] = { 0.0,1.0,1.0 };
 	float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
@@ -93,6 +88,9 @@ int main() {
 	// Wave 1 Uniforms
 	float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
 	float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
+	float wave1F = 1.0;
+	float wave1A = 0.2;
+	float wave1O = -0.2;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -100,8 +98,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//General Uniforms
-		shader.setFloat("_Brightness", triangleBrightness);
-		shader.setVec3("_Color", triangleColor[0], triangleColor[1], triangleColor[2]);
 		shader.setFloat("_Time", (float)glfwGetTime());
 		shader.setVec2("_Resolution", SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -117,11 +113,14 @@ int main() {
 		// Wave 1 Uniforms
 		shader.setVec3("wave1ClrTop", wave1ClrTop[0], wave1ClrTop[1], wave1ClrTop[2]);
 		shader.setVec3("wave1ClrBtm", wave1ClrBtm[0], wave1ClrBtm[1], wave1ClrBtm[2]);
+		shader.setFloat("wave1F", wave1F);
+		shader.setFloat("wave1A", wave1A);
+		shader.setFloat("wave1O", wave1O);
 
 		// Draw Calls
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
-		//Render UI
+		// Render UI
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
@@ -130,7 +129,6 @@ int main() {
 			// Misc Uniforms
 			ImGui::Begin("Settings");
 			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
-			ImGui::SliderFloat("Brightness", &triangleBrightness, 0.0f, 1.0f);
 
 			// BG Uniforms 
 			ImGui::ColorEdit3("bgClrTop", bgClrTop);
@@ -144,7 +142,9 @@ int main() {
 			// Wave 1 Uniforms
 			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);
 			ImGui::ColorEdit3("wave1ClrBtm", wave1ClrBtm);
-
+			ImGui::SliderFloat("wave1F", &wave1F, -5.0f, 5.0f);
+			ImGui::SliderFloat("wave1A", &wave1A, -3.0f, 3.0f);
+			ImGui::SliderFloat("wave1O", &wave1O, -1.0f, 1.0f);
 
 			ImGui::End();
 			if (showImGUIDemoWindow) {
