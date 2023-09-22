@@ -79,6 +79,8 @@ int main() {
 	// BG Uniforms
 	float bgClrTop[3] = { 0.0,1.0,1.0 };
 	float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
+	float bgClrTop2[3] = { 1.0,0.0,1.0 };
+	float bgClrBtm2[3] = { .4 + cos((float)glfwGetTime()) * .2,0.0,0.3 };
 	
 	// Sun Uniforms
 	float sunRadius = .2;
@@ -92,6 +94,7 @@ int main() {
 	float wave1A = 0.2;
 	float wave1O = -0.2;
 
+// ALL THE STUFF --------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -104,6 +107,8 @@ int main() {
 		// BG Uniforms
 		shader.setVec3("bgClrTop", bgClrTop[0], bgClrTop[1], bgClrTop[2]);
 		shader.setVec3("bgClrBtm", bgClrBtm[0], bgClrBtm[1], bgClrBtm[2]);
+		shader.setVec3("bgClrTop2", bgClrTop2[0], bgClrTop2[1], bgClrTop2[2]);
+		shader.setVec3("bgClrBtm2", bgClrBtm2[0], bgClrBtm2[1], bgClrBtm2[2]);
 
 		// Sun Uniforms
 		shader.setFloat("sunRadius", sunRadius);
@@ -133,6 +138,8 @@ int main() {
 			// BG Uniforms 
 			ImGui::ColorEdit3("bgClrTop", bgClrTop);
 			ImGui::ColorEdit3("bgClrBtm", bgClrBtm);
+			ImGui::ColorEdit3("bgClrTop2", bgClrTop2);
+			ImGui::ColorEdit3("bgClrBtm2", bgClrBtm2);
 
 			// Sun Uniforms
 			ImGui::SliderFloat("sunRadius", &sunRadius, 0.0f, 5.0f);

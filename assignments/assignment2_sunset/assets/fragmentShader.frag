@@ -11,6 +11,8 @@ uniform vec2 _Resolution;
 // BG Colour Uniforms
 uniform vec3 bgClrTop;
 uniform vec3 bgClrBtm;
+uniform vec3 bgClrTop2;	// Goal is to have the second colours blend with the first colours based on time, and then have those 2 new colors be blended as the bg
+uniform vec3 bgClrBtm2;
 
 // Sun Uniforms
 uniform float sunRadius;
@@ -23,6 +25,24 @@ uniform vec3 wave1ClrBtm;
 uniform float wave1F;
 uniform float wave1A;
 uniform float wave1O;
+
+struct Background {
+	vec2 uv;
+	vec3 clrTop1, clrBtm1, clrTop2, clrBtm2;
+	float time;
+
+	vec3 Color() {
+		vec3 clr = mix(clrBtm1, clrTop1, uv.y + sin(time));
+		return clr;
+	}
+
+	vec3 ColorAdvance() {
+		vec3 clr1 = mix(clrBtm1, clrBtm2, sin(time));
+		vec3 clr2 = mix(clrTop2, clrTop2, sin(time));
+		vec3 clr = mix(clr1, clr2, uv.y + sin(time));
+		return clr;
+	}
+};
 
 struct Sun {
 	float radius, inner;
@@ -71,7 +91,10 @@ void main(){
 	uv.x *= aspectRatio;
 
 	// BG
-	vec3 color = mix(bgClrBtm, bgClrTop, uv.y + sin(_Time));
+	Background bg = Background(uv, bgClrTop, bgClrBtm, bgClrTop2, bgClrBtm2, _Time);
+	vec3 color = bg.Color();
+	//vec3 color = bg.ColorAdvance();
+	//vec3 color = mix(bgClrBtm, bgClrTop, uv.y + sin(_Time)); //Replaced by bg.Color()
 
 	// Sun
 	Sun sun = Sun(sunRadius, sunInner, uv, sunClr, _Time);
@@ -79,6 +102,7 @@ void main(){
 	//float sunRadius = .2;
 	//float sunInner = .3;    
 	//float sunOutter = sunInner + sunRadius; 
+	// Replaced by all of Sun struct
 	// Coords of circle origin, this needs to be a uniform
 	float sunLerp = distance(uv, vec2(0.0, -.5 + sin(_Time))); 
 	sunLerp = smoothstep(sunInner + sunRadius, sunInner, sunLerp);
