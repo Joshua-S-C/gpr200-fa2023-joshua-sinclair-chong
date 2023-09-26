@@ -216,7 +216,7 @@ int main() {
 }
 
 
-
+// Other Functions
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned int* indicesData, int numIndices) {
 	int stride = sizeof(Vertex);
 
