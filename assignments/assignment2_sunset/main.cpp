@@ -35,7 +35,7 @@ unsigned int indices[6] = {
 	0, 2, 3  //Triangle 2. TOP LFT
 	//I am the most intelligent human being for taking only 30 minutes to realize that the indexes start at 0 :P
 };
-bool showImGUIDemoWindow = true;
+bool showImGUIDemoWindow = false;
 
 
 int main() {
@@ -75,31 +75,45 @@ int main() {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);//Wireframe
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	//Shaded
 
-// UNIFORMS -------------------------------------------------------------*/
+// Uniforms -------------------------------------------------------------*/
 	// BG Uniforms
-	float bgClrTop[3] = { 0.0,1.0,1.0 };
-	float bgClrBtm[3] = { .4 + sin((float)glfwGetTime()) * .2,0.0,0.3 };
-	float bgClrTop2[3] = { 1.0,0.0,1.0 };
-	float bgClrBtm2[3] = { .4 + cos((float)glfwGetTime()) * .2,0.0,0.3 };
+	float bgClrTop[3] = { 0.0,0.2,1.0 };
+	float bgClrTop2[3] = { 0.2,0.7,0.9 };
+	float bgClrBtm[3] = { 1.0,0.0,0.3 };
+	float bgClrBtm2[3] = { 0.0,0.0,0.0 };
 	
 	// Sun Uniforms
-	float sunRadius = .2;
+	float sunSpeed = 1;
+	float sunBlur = .2;
 	float sunInner = .3;
 	float sunClr[3] = { 1.0,1.0,0.0 };
+	float sunClr2[3] = { 1.0,0.65,0.0 };
 
 	// Wave 1 Uniforms
-	float wave1ClrTop[3] = { 0.2f, 0.50f, 0.80f };
-	float wave1ClrBtm[3] = { 0.3f, 0.65f, 1.00f };
+	float wave1ClrTop[3] = { 0.3, 0.65, 1.00 };
+	float wave1ClrBtm[3] = { 0.15, 0.40, 0.70 };
 	float wave1F = 1.0;
 	float wave1A = 0.2;
 	float wave1O = -0.2;
 
-// ALL THE STUFF --------------------------------------------------------*/
+	// Wave 2 Uniforms
+	float wave2ClrTop[3] = { 0.3,0.40,0.80 };
+	float wave2ClrBtm[3] = { 0.30,0.75,1.00 };
+	float wave2F = 5.0;
+	float wave2A = 0.07;
+	float wave2O = -0.55;
+
+	// Wave 2-Compound Uniforms
+	float wave2CF = 11.0;
+	float wave2CA = 0.03;
+
+// Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+// Set Uniforms ---------------------------------------------------------*/
 		//General Uniforms
 		shader.setFloat("_Time", (float)glfwGetTime());
 		shader.setVec2("_Resolution", SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -111,9 +125,11 @@ int main() {
 		shader.setVec3("bgClrBtm2", bgClrBtm2[0], bgClrBtm2[1], bgClrBtm2[2]);
 
 		// Sun Uniforms
-		shader.setFloat("sunRadius", sunRadius);
+		shader.setFloat("sunSpeed", sunSpeed);
+		shader.setFloat("sunBlur", sunBlur);
 		shader.setFloat("sunInner", sunInner);
 		shader.setVec3("sunClr", sunClr[0], sunClr[1], sunClr[2]);
+		shader.setVec3("sunClr2", sunClr2[0], sunClr2[1], sunClr2[2]);
 
 		// Wave 1 Uniforms
 		shader.setVec3("wave1ClrTop", wave1ClrTop[0], wave1ClrTop[1], wave1ClrTop[2]);
@@ -122,46 +138,78 @@ int main() {
 		shader.setFloat("wave1A", wave1A);
 		shader.setFloat("wave1O", wave1O);
 
-		// Draw Calls
+		// Wave 2 Uniforms
+		shader.setVec3("wave2ClrTop", wave2ClrTop[0], wave2ClrTop[1], wave2ClrTop[2]);
+		shader.setVec3("wave2ClrBtm", wave2ClrBtm[0], wave2ClrBtm[1], wave2ClrBtm[2]);
+		shader.setFloat("wave2F", wave2F);
+		shader.setFloat("wave2A", wave2A);
+		shader.setFloat("wave2O", wave2O);
+		
+		// Wave 2-Compound Uniforms
+		shader.setFloat("wave2CF", wave2CF);
+		shader.setFloat("wave2CA", wave2CA);
+
+		// Draw Call (a singular, lonely draw call)
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
-		// Render UI
-		{
-			ImGui_ImplGlfw_NewFrame();
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui::NewFrame();
+// Render UI ------------------------------------------------------------*/
+		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
 
-			// Misc Uniforms
-			ImGui::Begin("Settings");
-			ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
+		// Background Settings
+		{	ImGui::Begin("Background");
 
-			// BG Uniforms 
-			ImGui::ColorEdit3("bgClrTop", bgClrTop);
-			ImGui::ColorEdit3("bgClrBtm", bgClrBtm);
-			ImGui::ColorEdit3("bgClrTop2", bgClrTop2);
-			ImGui::ColorEdit3("bgClrBtm2", bgClrBtm2);
+			ImGui::ColorEdit3("Top Colour", bgClrTop);
+			ImGui::ColorEdit3("Top Colour 2", bgClrTop2);
+			ImGui::ColorEdit3("Bottom Colour", bgClrBtm);
+			ImGui::ColorEdit3("Bottom Colour 2", bgClrBtm2);
 
-			// Sun Uniforms
-			ImGui::SliderFloat("sunRadius", &sunRadius, 0.0f, 5.0f);
-			ImGui::SliderFloat("sunInner", &sunInner, 0.0f, 1.0f);
-			ImGui::ColorEdit3("sunClr", sunClr);
+			//ImGui::Checkbox("Show Demo Window", &showImGUIDemoWindow);
+			//if (showImGUIDemoWindow) {
+			//	ImGui::ShowDemoWindow(&showImGUIDemoWindow);
+			//}
 
-			// Wave 1 Uniforms
-			ImGui::ColorEdit3("wave1ClrTop", wave1ClrTop);
-			ImGui::ColorEdit3("wave1ClrBtm", wave1ClrBtm);
-			ImGui::SliderFloat("wave1F", &wave1F, -5.0f, 5.0f);
-			ImGui::SliderFloat("wave1A", &wave1A, -3.0f, 3.0f);
-			ImGui::SliderFloat("wave1O", &wave1O, -1.0f, 1.0f);
+			ImGui::End();	}
 
-			ImGui::End();
-			if (showImGUIDemoWindow) {
-				ImGui::ShowDemoWindow(&showImGUIDemoWindow);
-			}
+		// Sun Settings
+		{	ImGui::Begin("Sun");
 
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		}
+			ImGui::SliderFloat("Speed", &sunSpeed, 0.0f, 5.0f);
+			ImGui::SliderFloat("Blur", &sunBlur, 0.0f, 5.0f);
+			ImGui::SliderFloat("Inner", &sunInner, 0.0f, 1.0f);
+			ImGui::ColorEdit3("Colour", sunClr);
+			ImGui::ColorEdit3("Colour 2", sunClr2);
 
+			ImGui::End();	}
+
+		// Wave 1 Settings
+		{	ImGui::Begin("Wave 1");
+
+			ImGui::ColorEdit3("Top Colour", wave1ClrTop);
+			ImGui::ColorEdit3("Bottom Colour", wave1ClrBtm);
+			ImGui::SliderFloat("Frequency", &wave1F, -5.0f, 5.0f);
+			ImGui::SliderFloat("Amplitude", &wave1A, -3.0f, 3.0f);
+			ImGui::SliderFloat("Offset", &wave1O, -1.5f, 1.0f);
+
+			ImGui::End();	}
+
+		// Wave 2 Settings
+		{	ImGui::Begin("Wave 2 (Compound)");
+
+			//ImGui::ColorEdit3("Top Colour", wave2ClrTop);	// Doesn't actually do anything cuz of how mixing
+			ImGui::ColorEdit3("Bottom Colour", wave2ClrBtm);
+			ImGui::SliderFloat("Frequency", &wave2F, -5.0f, 5.0f);
+			ImGui::SliderFloat("Amplitude", &wave2A, -3.0f, 3.0f);
+			ImGui::SliderFloat("Offset", &wave2O, -1.5f, 1.0f);
+			
+			ImGui::SliderFloat("C-Frequency", &wave2CF, 0.0f, 20.0f);
+			ImGui::SliderFloat("C-Amplitude", &wave2CA, 0.0f, 1.0f);
+
+			ImGui::End();	}
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); 
 		glfwSwapBuffers(window);
 	}
 	printf("Shutting down...");
