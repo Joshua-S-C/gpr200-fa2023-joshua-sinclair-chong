@@ -9,6 +9,8 @@
 #include <imgui_impl_opengl3.h>
 
 #include <ew/shader.h>
+#include <jsc/shader.h>
+#include <jsc/texture.h>
 
 struct Vertex {
 	float x, y, z;

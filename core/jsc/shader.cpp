@@ -4,7 +4,7 @@ namespace jsc {
 	std::string loadShaderSourceFromFile(const std::string& filePath) {
 		std::ifstream fstream(filePath);
 		if (!fstream.is_open()) {
-			printf("Failed to load file %s", filePath);
+			printf("Failed to load file %s", filePath.c_str());
 			return {};
 		}
 
