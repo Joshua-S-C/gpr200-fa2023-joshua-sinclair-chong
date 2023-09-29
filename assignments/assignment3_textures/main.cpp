@@ -84,14 +84,17 @@ int main() {
 		backgroundShader.setInt("_Texture", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-
-		// Draw Noise
-		noiseShader.use();
-		noiseShader.setInt("_Texture", 0);
-		glActiveTexture(GL_TEXTURE0);
+		backgroundShader.setInt("_Texture2", 1);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, characterTexture);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		//// Draw Noise
+		//noiseShader.use();
+		//noiseShader.setInt("_Texture", 0);
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, characterTexture);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 
 		// Draw Character
 		//characterShader.use();
