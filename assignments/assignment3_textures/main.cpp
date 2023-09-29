@@ -67,7 +67,7 @@ int main() {
 	glBindVertexArray(quadVAO);
 
 	// Load Texture
-	unsigned int brickTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
+	unsigned int brickTexture = loadTexture("assets/smile.png", GL_REPEAT, GL_LINEAR);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
