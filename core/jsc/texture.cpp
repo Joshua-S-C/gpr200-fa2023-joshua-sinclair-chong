@@ -44,7 +44,7 @@ unsigned int loadTexture(const char* filePath, int wrapMode, int filterMode) {
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
 	return texture;
 }

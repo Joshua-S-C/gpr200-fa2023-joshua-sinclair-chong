@@ -60,24 +60,39 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
-
 	unsigned int quadVAO = createVAO(vertices, 4, indices, 6);
 
 	glBindVertexArray(quadVAO);
 
-	// Load Texture
-	unsigned int brickTexture = loadTexture("assets/smile.png", GL_REPEAT, GL_LINEAR);
+	// Shaders and Textures
+	//ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	ew::Shader backgroundShader("assets/shaders/background.vert", "assets/shaders/background.frag");
+	ew::Shader characterShader("assets/shaders/character.vert", "assets/shaders/character.frag");
+
+	// Load Textures
+	unsigned int brickTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
+	unsigned int noiseTexture = loadTexture("assets/noiseTexture.png", GL_REPEAT, GL_LINEAR);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Set uniforms
-		shader.use();
 
+		// Draw Background
+		backgroundShader.use();
+		backgroundShader.setInt("_Texture", 0);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
+		// Draw Character
+		characterShader.use();
+		characterShader.setInt("_Texture", 0);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, noiseTexture);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
+
 
 		//Render UI
 		{
