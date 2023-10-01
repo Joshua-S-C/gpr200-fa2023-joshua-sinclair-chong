@@ -34,13 +34,14 @@ unsigned int loadTexture(const char* filePath, int wrapMode, int filterMode) {
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexImage2D(GL_TEXTURE_2D, 0, colorFormat, width, height, 0, colorFormat, GL_UNSIGNED_BYTE, data);
 
+// TODO : Update the loadTexture function to include options for wrapping and filtering.At minimum, you should include a filter mode that is used for both minification and magnification, and a wrap mode that is used for both horizontal and vertical.I encourage you to include more parameters for more fine tune control.
+// 
 	// Set texture properties
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
 
-	// TODO: Update the loadTexture function to include options for wrapping and filtering.At minimum, you should include a filter mode that is used for both minification and magnification, and a wrap mode that is used for both horizontal and vertical.I encourage you to include more parameters for more fine tune control.
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 
