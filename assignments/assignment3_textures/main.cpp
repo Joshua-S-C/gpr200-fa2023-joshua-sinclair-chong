@@ -146,6 +146,7 @@ int main() {
 		characterShader.setInt("_Texture", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, characterTexture);
+		//glTextureParameteri(characterTexture, GL_CLAMP_TO_EDGE, GL_LINEAR);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
 		
@@ -162,55 +163,64 @@ int main() {
 
 		// Background Settings
 		if (ImGui::CollapsingHeader("Background")) {
-		// Who would've thought that constantly reloading 3 big images would obliterate performance. 
-		// TODO something about this. Using buttons only kinda works
-		
-			// Change wrap mode 
-			static int wrapIndex = 0;
-			ImGui::Combo("Wrap", &wrapIndex, "Repeat\0Mirrored Repeat\0Clamp to Edge\0Clamp to Border\0Mirror Clamp to Edge");
-			// Change filter mode 
-			static int filterIndex = 0;
-			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
-				glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+			// Change Wrap and Filter Modes
+			{
+				static int wrapIndex = 0;
+				ImGui::Combo("Wrap", &wrapIndex, "Repeat\0Mirrored Repeat\0Clamp to Edge\0Clamp to Border\0Mirror Clamp to Edge");
+				static int filterIndex = 0;
+				ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
 
-				glTextureParameteri(backgroundTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
-				glTextureParameteri(backgroundObjectTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
-				glTextureParameteri(noiseTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
+				glTextureParameteri(backgroundTexture, GL_TEXTURE_WRAP_S, wrapModes[wrapIndex]);
+				glTextureParameteri(backgroundTexture, GL_TEXTURE_WRAP_T, wrapModes[wrapIndex]);
+				glTextureParameteri(backgroundTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
+				glTextureParameteri(backgroundTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
 
-			// Apply Filters
-			if (ImGui::Button("Apply Filters")) {
-				// gltextureparameteri, pass in name of text, and settings
-				// or glBindText(Gl texture 2d, text name)
-				// 
-				//backgroundTexture = loadTexture("assets/Images/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				//backgroundObjectTexture = loadTexture("assets/Images/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				//noiseTexture = loadTexture("assets/Images/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				glTextureParameteri(noiseTexture, GL_TEXTURE_WRAP_S, wrapModes[wrapIndex]);
+				glTextureParameteri(noiseTexture, GL_TEXTURE_WRAP_T, wrapModes[wrapIndex]);
+				glTextureParameteri(noiseTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
+				glTextureParameteri(noiseTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
+
+				glTextureParameteri(backgroundObjectTexture, GL_TEXTURE_WRAP_S, wrapModes[wrapIndex]);
+				glTextureParameteri(backgroundObjectTexture, GL_TEXTURE_WRAP_T, wrapModes[wrapIndex]);
+				glTextureParameteri(backgroundObjectTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
+				glTextureParameteri(backgroundObjectTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
 			}
 
-			ImGui::SliderFloat("Tiling", &tiling, 0.0, 10.0);
-			ImGui::SliderFloat("Object Alpha", &text2Alpha, .0, 1.0);
-			ImGui::SliderFloat("Strength", &distortionStrength, .0, .5);
-			ImGui::SliderFloat("Speed", &distortionSpeed, .0, .5);
+			// Change Images 
+			{
+				if (ImGui::Button("Image Set 1")) {
+					noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
+					backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
+					backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
+				}
 
-			ImGui::SliderFloat("Noise Alpha", &noiseAlpha, .0, 1.0);
-			ImGui::ColorPicker3("Noise Colour", noiseColour);
+				if (ImGui::Button("Image Set 2")) {
+					noiseTexture = loadTexture("assets/Images/noise2.png", GL_REPEAT, GL_LINEAR);
+					backgroundTexture = loadTexture("assets/Images/underwaterImages2.png", GL_REPEAT, GL_LINEAR);
+					backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
+				}
+			}
 
+			// Uniforms
+			{
+				ImGui::SliderFloat("Tiling", &tiling, 0.0, 10.0);
+				ImGui::SliderFloat("Object Alpha", &text2Alpha, .0, 1.0);
+				ImGui::SliderFloat("Strength", &distortionStrength, .0, .5);
+				ImGui::SliderFloat("Speed", &distortionSpeed, .0, .5);
+
+				ImGui::SliderFloat("Noise Alpha", &noiseAlpha, .0, 1.0);
+				ImGui::ColorPicker3("Noise Colour", noiseColour);
+			}
 		}
 
 		// Character Settings
 		if (ImGui::CollapsingHeader("Character")) {
 			// Change filter mode
-			static int filterIndex = 0;
-			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
-
-			glBindTexture(GL_TEXTURE_2D, characterTexture);
-			glTextureParameteri(characterTexture, GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
-			glBindTexture(GL_TEXTURE_2D, 0);
-
-
-			// Apply Filters
-			if (ImGui::Button("Apply Filters")) {
-				//characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
+			{
+				static int filterIndex = 0;
+				ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
+				glTextureParameteri(characterTexture, GL_TEXTURE_MIN_FILTER, filterModes[filterIndex]);
+				glTextureParameteri(characterTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
 			}
 
 			ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
