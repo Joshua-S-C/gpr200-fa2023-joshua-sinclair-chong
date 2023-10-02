@@ -73,11 +73,12 @@ int main() {
 	glBindVertexArray(quadVAO);
 
 	ew::Shader backgroundShader("assets/shaders/background.vert", "assets/shaders/background.frag");
+	unsigned int noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
 	unsigned int backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
 	unsigned int backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
-	//unsigned int backgroundTexture = loadTexture("assets/Images/underwaterImages.png", GL_REPEAT, GL_LINEAR);
+	//unsigned int backgroundTexture = loadTexture("assets/Images/underwaterImages2.png", GL_REPEAT, GL_LINEAR);
 	//unsigned int backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
-	unsigned int noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
+
 	ew::Shader characterShader("assets/shaders/character.vert", "assets/shaders/character.frag");
 	unsigned int characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
 
