@@ -4,6 +4,7 @@ in vec2 UV;
 
 // Uniforms
 uniform float _Time;
+uniform float _Tiling;
 uniform float _DistortionStrength;
 uniform float _DistortionSpeed;
 uniform float _Text2Alpha;
@@ -16,11 +17,12 @@ uniform sampler2D _Texture;		// Background
 uniform sampler2D _Texture2;	// Object
 uniform sampler2D _Texture3;	// Noise
 
+// TODO scale background by multiplying uv?
 
 void main(){
 	float noise = texture(_Texture3, UV + _Time * _DistortionSpeed).r;
 	vec2 uv = UV + noise * (_DistortionStrength);
-
+	uv*=_Tiling;
 	vec4 color1 = texture(_Texture, uv);
 	vec4 color2 = texture(_Texture2, uv);
 	vec3 color = mix(color1.rgb, color2.rbg, color2.a * _Text2Alpha);

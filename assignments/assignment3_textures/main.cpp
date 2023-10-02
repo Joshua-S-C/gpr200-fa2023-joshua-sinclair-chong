@@ -83,12 +83,13 @@ int main() {
 	unsigned int characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
 
 // Initialize Uniforms --------------------------------------------------*/
+	float tiling = 1.0;
 	float distortionStrength = .1;
 	float distortionSpeed = .1;
 	float text2Alpha = .5;
 	float noiseColour[] = {0.0, 0.0, 0.0};
 	float noiseAlpha = 0.5;
-
+	
 
 	//float characterScale[] = { 0.5, 1.0 };	// For images that are 3:2
 	float characterScale[] = { 0.25, 1.0 };		// For images that are 2:3, also now just using this as a constant
@@ -111,6 +112,7 @@ int main() {
 		backgroundShader.use();
 
 		backgroundShader.setFloat("_Time", (float)glfwGetTime());
+		backgroundShader.setFloat("_Tiling", tiling);
 		backgroundShader.setFloat("_DistortionStrength", distortionStrength);
 		backgroundShader.setFloat("_DistortionSpeed", distortionSpeed);
 		backgroundShader.setFloat("_Text2Alpha", text2Alpha);
@@ -149,7 +151,6 @@ int main() {
 		
 
 // Render UI ------------------------------------------------------------*/
-	static int clicked = 0;
 	{
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -170,16 +171,23 @@ int main() {
 			// Change filter mode 
 			static int filterIndex = 0;
 			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
+				glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+
+				glTextureParameteri(backgroundTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
+				glTextureParameteri(backgroundObjectTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
+				glTextureParameteri(noiseTexture, wrapModes[wrapIndex], filterModes[filterIndex]);
 
 			// Apply Filters
-			clicked = 0;
-			if (ImGui::Button("Apply Filters")) clicked++;
-			if (clicked & 1) {
-				backgroundTexture = loadTexture("assets/Images/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				backgroundObjectTexture = loadTexture("assets/Images/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				noiseTexture = loadTexture("assets/Images/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+			if (ImGui::Button("Apply Filters")) {
+				// gltextureparameteri, pass in name of text, and settings
+				// or glBindText(Gl texture 2d, text name)
+				// 
+				//backgroundTexture = loadTexture("assets/Images/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				//backgroundObjectTexture = loadTexture("assets/Images/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				//noiseTexture = loadTexture("assets/Images/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
 			}
 
+			ImGui::SliderFloat("Tiling", &tiling, 0.0, 10.0);
 			ImGui::SliderFloat("Object Alpha", &text2Alpha, .0, 1.0);
 			ImGui::SliderFloat("Strength", &distortionStrength, .0, .5);
 			ImGui::SliderFloat("Speed", &distortionSpeed, .0, .5);
@@ -193,12 +201,16 @@ int main() {
 		if (ImGui::CollapsingHeader("Character")) {
 			// Change filter mode
 			static int filterIndex = 0;
-			ImGui::Combo("Filter", &filterIndex, filterModesList.c_str());
+			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
+
+			glBindTexture(GL_TEXTURE_2D, characterTexture);
+			glTextureParameteri(characterTexture, GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
+			glBindTexture(GL_TEXTURE_2D, 0);
+
+
 			// Apply Filters
-			clicked = 0;
-			if (ImGui::Button("Apply Filters")) clicked++;
-			if (clicked & 1) {
-				characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
+			if (ImGui::Button("Apply Filters")) {
+				//characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
 			}
 
 			ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
@@ -207,7 +219,6 @@ int main() {
 			ImGui::SliderFloat("Scale", &characterScaleRatio, 0, 1);
 			ImGui::SliderFloat("X Distance", &distance[0], 0, 1);
 			ImGui::SliderFloat("Y Distance", &distance[1], 0, 1);
-
 			ImGui::SliderFloat("Offset", &characterOffset, -3, 2);
 		}
 
