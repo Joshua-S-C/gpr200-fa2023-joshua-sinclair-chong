@@ -20,7 +20,7 @@ struct Vertex {
 unsigned int createVAO(Vertex* vertexData, int numVertices, unsigned short* indicesData, int numIndices);
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-const int SCREEN_WIDTH = 1080;
+const int SCREEN_WIDTH = 1080;	
 const int SCREEN_HEIGHT = 720;
 
 Vertex vertices[4] = {
@@ -34,12 +34,12 @@ unsigned short indices[6] = {
 	2, 3, 0
 };
 
-int wrapModes[2] = { GL_REPEAT, GL_CLAMP_TO_EDGE };
-int filterModes[2] = { GL_NEAREST, GL_LINEAR };
+int wrapModes[] = { GL_REPEAT,  GL_MIRRORED_REPEAT , GL_CLAMP_TO_EDGE , GL_CLAMP_TO_BORDER , GL_MIRROR_CLAMP_TO_EDGE };
+int filterModes[] = { GL_NEAREST, GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST , GL_NEAREST_MIPMAP_LINEAR , GL_LINEAR_MIPMAP_LINEAR };
 
-// TODO : how to use these in the combo cuz strings dont work
-std::string wrapModesString = "Clamp to Edge\0Repeat";
-std::string filterModesString = "Nearest Neighboor\0Linear";
+// TODO : how to use these in the combo cuz strings and .c_str() dont work
+std::string wrapModesList = "Repeat\0Mirrored Repeat\0Clamp to Edge\0Clamp to Border\0Mirror Clamp to Edge";
+std::string filterModesList = "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear";
 
 int main() {
 // Initialize Window ----------------------------------------------------*/
@@ -73,10 +73,11 @@ int main() {
 	glBindVertexArray(quadVAO);
 
 	ew::Shader backgroundShader("assets/shaders/background.vert", "assets/shaders/background.frag");
-	unsigned int brickTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
-	unsigned int brick2Texture = loadTexture("assets/smile2.png", GL_REPEAT, GL_LINEAR);
-	unsigned int noiseTexture = loadTexture("assets/noise2.png", GL_REPEAT, GL_LINEAR);
-
+	unsigned int backgroundTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
+	unsigned int backgroundObjectTexture = loadTexture("assets/smile2.png", GL_REPEAT, GL_LINEAR);
+	//unsigned int backgroundTexture = loadTexture("assets/underwaterImages.png", GL_REPEAT, GL_LINEAR);
+	//unsigned int backgroundObjectTexture = loadTexture("assets/notNemo.png", GL_REPEAT, GL_LINEAR);
+	unsigned int noiseTexture = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
 	ew::Shader characterShader("assets/shaders/character.vert", "assets/shaders/character.frag");
 	unsigned int characterTexture = loadTexture("assets/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
 
@@ -88,10 +89,12 @@ int main() {
 	float noiseAlpha = 0.5;
 
 
-	float characterScale = 0.5;
-	float characterSpeed = 0.5;
-	float distanceX = 0.5;
-	float distanceY = 0.5;
+	//float characterScale[] = { 0.5, 1.0 };	// For images that are 3:2
+	float characterScale[] = { 0.25, 1.0 };		// For images that are 2:3, also now just using this as a constant
+	float characterScaleRatio = characterScale[0] / characterScale[1];
+	float characterSpeed = 1.0;
+	float distance[2] = { 0.5, 0.5 };
+	float characterOffset = 0.5;
 
 // Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
@@ -115,11 +118,11 @@ int main() {
 
 		backgroundShader.setInt("_Texture", 0);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		glBindTexture(GL_TEXTURE_2D, backgroundTexture);
 
 		backgroundShader.setInt("_Texture2", 1);
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, brick2Texture);
+		glBindTexture(GL_TEXTURE_2D, backgroundObjectTexture);
 
 		backgroundShader.setInt("_Texture3", 2);
 		glActiveTexture(GL_TEXTURE2);
@@ -131,10 +134,11 @@ int main() {
 		characterShader.use();
 
 		characterShader.setFloat("_Time", (float)glfwGetTime());
-		characterShader.setFloat("_Scale", characterScale);
+		characterShader.setVec2("_Scale", characterScale[0], characterScale[1]);
+		characterShader.setFloat("_ScaleRatio", characterScaleRatio);
 		characterShader.setFloat("_Speed", characterSpeed);
-		characterShader.setFloat("_DistanceX", distanceX);
-		characterShader.setFloat("_DistanceY", distanceY);
+		characterShader.setVec2("_Distance", distance[0], distance[1]);
+		characterShader.setFloat("_VertOffset", characterOffset);
 
 		characterShader.setInt("_Texture", 0);
 		glActiveTexture(GL_TEXTURE0);
@@ -144,33 +148,41 @@ int main() {
 		
 
 // Render UI ------------------------------------------------------------*/
+	static int clicked = 0;
 	{
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
 
 		ImGui::SetNextWindowPos({ 0,0 });
-		ImGui::SetNextWindowSize({ 250,400 });
-		ImGui::Begin("Settings");
+		ImGui::SetNextWindowSize({ 300, 720 });
+		ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
 		// Background Settings
 		if (ImGui::CollapsingHeader("Background")) {
 		// Who would've thought that constantly reloading 3 big images would obliterate performance. 
-		// TODO something about this
+		// TODO something about this. Using buttons only kinda works
 		
-			//// Change wrap mode 
-			//static int wrapIndex = 0;
-			//ImGui::Combo("Wrap", &wrapIndex, "Clamp to Edge\0Repeat");
-			//// Change filter mode 
-			//static int filterIndex = 0;
-			//ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear");
-			//brickTexture = loadTexture("assets/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-			//brick2Texture = loadTexture("assets/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-			//noiseTexture = loadTexture("assets/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+			// Change wrap mode 
+			static int wrapIndex = 0;
+			ImGui::Combo("Wrap", &wrapIndex, "Repeat\0Mirrored Repeat\0Clamp to Edge\0Clamp to Border\0Mirror Clamp to Edge");
+			// Change filter mode 
+			static int filterIndex = 0;
+			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear");
 
+			// Apply Filters
+			clicked = 0;
+			if (ImGui::Button("Apply Filters")) clicked++;
+			if (clicked & 1) {
+				backgroundTexture = loadTexture("assets/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				backgroundObjectTexture = loadTexture("assets/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				noiseTexture = loadTexture("assets/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+			}
+
+			ImGui::SliderFloat("Object Alpha", &text2Alpha, .0, 1.0);
 			ImGui::SliderFloat("Strength", &distortionStrength, .0, .5);
 			ImGui::SliderFloat("Speed", &distortionSpeed, .0, .5);
-			ImGui::SliderFloat("Alpha", &text2Alpha, .0, 1.0);
+
 			ImGui::SliderFloat("Noise Alpha", &noiseAlpha, .0, 1.0);
 			ImGui::ColorPicker3("Noise Colour", noiseColour);
 
@@ -178,20 +190,24 @@ int main() {
 
 		// Character Settings
 		if (ImGui::CollapsingHeader("Character")) {
-			// Change wrap mode 
-			static int wrapIndex = 0;
-			ImGui::Combo("Wrap", &wrapIndex, "Clamp to Edge\0Repeat");
 			// Change filter mode
 			static int filterIndex = 0;
-			ImGui::Combo("Filter", &filterIndex, "Nearest Neighboor\0Linear");
+			ImGui::Combo("Filter", &filterIndex, filterModesList.c_str());
+			// Apply Filters
+			clicked = 0;
+			if (ImGui::Button("Apply Filters")) clicked++;
+			if (clicked & 1) {
+				characterTexture = loadTexture("assets/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
+			}
 
-			characterTexture = loadTexture("assets/character.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+			ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
+			//ImGui::SliderFloat("X Scale", &characterScale[0], 0, 1);
+			//ImGui::SliderFloat("Y Scale", &characterScale[1], 0, 1);
+			ImGui::SliderFloat("Scale", &characterScaleRatio, 0, 1);
+			ImGui::SliderFloat("X Distance", &distance[0], 0, 1);
+			ImGui::SliderFloat("Y Distance", &distance[1], 0, 1);
 
-			ImGui::SliderFloat("Scale", &characterScale, 0, 1);
-			ImGui::SliderFloat("Speed", &characterSpeed, 0, 1);
-			ImGui::SliderFloat("X Distance", &distanceX, 0, 1);
-			ImGui::SliderFloat("Y Distance", &distanceY, 0, 1);
-
+			ImGui::SliderFloat("Offset", &characterOffset, -3, 2);
 		}
 
 		ImGui::End();

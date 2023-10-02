@@ -5,14 +5,30 @@ out vec2 UV;
 
 // Uniforms
 uniform float _Time;
-uniform float _Scale;
+uniform vec2 _Scale;
+uniform float _ScaleRatio;
 uniform float _Speed;
-uniform float _DistanceX;
-uniform float _DistanceY;
+uniform vec2 _Distance;
+uniform float _VertOffset;
 
 void main(){
 	UV = vUV;
-	vec3 offset = vec3(vPos.x + _DistanceX * cos(_Time),abs(sin(_Time)) - _Scale/2,0);
-	gl_Position = vec4((vPos + offset) * _Scale,1.0);
+	//float vertOffset = 2*log(_ScaleRatio); //idk math this is an approximation stop wasting time on it lol
+	vec3 offset = vec3(vPos.x + (_Distance.x * cos(_Time * _Speed)),
+		abs(_Distance.y * sin(_Time * _Speed)), 0);
+	offset += vPos;
+	gl_Position = vec4(vec2(offset.x * _Scale.x * _ScaleRatio, 
+		(offset.y + _VertOffset) * _Scale.y * _ScaleRatio), 
+		1.0, 1.0);
 	//gl_Position = vec4(vPos,1.0);	// Default
 }
+
+
+/*
+Scale	Offset
+.25		-3
+.5		-1
+.75		.33?
+1		0
+go look at desmos
+*/
