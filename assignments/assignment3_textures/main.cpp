@@ -73,13 +73,13 @@ int main() {
 	glBindVertexArray(quadVAO);
 
 	ew::Shader backgroundShader("assets/shaders/background.vert", "assets/shaders/background.frag");
-	unsigned int backgroundTexture = loadTexture("assets/brick.png", GL_REPEAT, GL_LINEAR);
-	unsigned int backgroundObjectTexture = loadTexture("assets/smile2.png", GL_REPEAT, GL_LINEAR);
-	//unsigned int backgroundTexture = loadTexture("assets/underwaterImages.png", GL_REPEAT, GL_LINEAR);
-	//unsigned int backgroundObjectTexture = loadTexture("assets/notNemo.png", GL_REPEAT, GL_LINEAR);
-	unsigned int noiseTexture = loadTexture("assets/noise.png", GL_REPEAT, GL_LINEAR);
+	unsigned int backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
+	unsigned int backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
+	//unsigned int backgroundTexture = loadTexture("assets/Images/underwaterImages.png", GL_REPEAT, GL_LINEAR);
+	//unsigned int backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
+	unsigned int noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
 	ew::Shader characterShader("assets/shaders/character.vert", "assets/shaders/character.frag");
-	unsigned int characterTexture = loadTexture("assets/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
+	unsigned int characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
 
 // Initialize Uniforms --------------------------------------------------*/
 	float distortionStrength = .1;
@@ -174,9 +174,9 @@ int main() {
 			clicked = 0;
 			if (ImGui::Button("Apply Filters")) clicked++;
 			if (clicked & 1) {
-				backgroundTexture = loadTexture("assets/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				backgroundObjectTexture = loadTexture("assets/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
-				noiseTexture = loadTexture("assets/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				backgroundTexture = loadTexture("assets/Images/brick.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				backgroundObjectTexture = loadTexture("assets/Images/smile2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
+				noiseTexture = loadTexture("assets/Images/noise2.png", wrapModes[wrapIndex], filterModes[filterIndex]);
 			}
 
 			ImGui::SliderFloat("Object Alpha", &text2Alpha, .0, 1.0);
@@ -197,7 +197,7 @@ int main() {
 			clicked = 0;
 			if (ImGui::Button("Apply Filters")) clicked++;
 			if (clicked & 1) {
-				characterTexture = loadTexture("assets/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
+				characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, filterModes[filterIndex]);
 			}
 
 			ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
