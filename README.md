@@ -3,4 +3,4 @@
 
 2 : Fun with Fragment Shaders Submission (or the one without struct member functions)
 
-3: Textures & Blending Submission
+3: Textures & Blending Submission :D
