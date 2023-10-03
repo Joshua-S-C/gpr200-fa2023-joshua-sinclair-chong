@@ -34,10 +34,15 @@ unsigned short indices[6] = {
 	2, 3, 0
 };
 
+// Used for UI controls
+int blendModes[] = { 
+	GL_ZERO ,GL_ONE ,GL_SRC_COLOR ,GL_ONE_MINUS_SRC_COLOR ,GL_DST_COLOR ,GL_ONE_MINUS_DST_COLOR ,GL_SRC_ALPHA ,GL_ONE_MINUS_SRC_ALPHA ,
+	GL_DST_ALPHA ,GL_ONE_MINUS_DST_ALPHA ,GL_CONSTANT_COLOR ,GL_ONE_MINUS_CONSTANT_COLOR ,GL_CONSTANT_ALPHA ,GL_ONE_MINUS_CONSTANT_ALPHA ,
+	GL_SRC_ALPHA_SATURATE ,GL_SRC1_COLOR ,GL_ONE_MINUS_SRC1_COLOR ,GL_SRC1_ALPHA ,GL_ONE_MINUS_SRC1_ALPHA };
 int wrapModes[] = { GL_REPEAT,  GL_MIRRORED_REPEAT , GL_CLAMP_TO_EDGE , GL_CLAMP_TO_BORDER , GL_MIRROR_CLAMP_TO_EDGE };
 int filterModes[] = { GL_NEAREST, GL_LINEAR, GL_NEAREST_MIPMAP_NEAREST, GL_LINEAR_MIPMAP_NEAREST , GL_NEAREST_MIPMAP_LINEAR , GL_LINEAR_MIPMAP_LINEAR };
 
-// TODO : how to use these in the combo cuz strings and .c_str() dont work
+// TODO : how to use these in the combo cuz strings and .c_str() dont work. Currently unused
 std::string wrapModesList = "Repeat\0Mirrored Repeat\0Clamp to Edge\0Clamp to Border\0Mirror Clamp to Edge";
 std::string filterModesList = "Nearest Neighboor\0Linear\0Nearest Mipmap-Nearest\0Linear Mipmap-Nearest\0Nearest Mipmap-Linear\0Linear Mipmap-Linear";
 
@@ -76,22 +81,21 @@ int main() {
 	unsigned int noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
 	unsigned int backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
 	unsigned int backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
-	//unsigned int backgroundTexture = loadTexture("assets/Images/underwaterImages2.png", GL_REPEAT, GL_LINEAR);
-	//unsigned int backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
 
 	ew::Shader characterShader("assets/shaders/character.vert", "assets/shaders/character.frag");
 	unsigned int characterTexture = loadTexture("assets/Images/character.png", GL_CLAMP_TO_EDGE, GL_NEAREST);
 
 // Initialize Uniforms --------------------------------------------------*/
+	// Background
 	float tiling = 1.0;
 	float distortionStrength = .1;
 	float distortionSpeed = .1;
 	float text2Alpha = .5;
 	float noiseColour[] = {0.0, 0.0, 0.0};
 	float noiseAlpha = 0.5;
-	
 
-	//float characterScale[] = { 0.5, 1.0 };	// For images that are 3:2
+	// Character
+	//float characterScale[] = { 0.5, 1.0 };	// For images that are 3:2. // Could've made this done automatically
 	float characterScale[] = { 0.25, 1.0 };		// For images that are 2:3, also now just using this as a constant
 	float characterScaleRatio = characterScale[0] / characterScale[1];
 	float characterSpeed = 1.0;
@@ -106,7 +110,7 @@ int main() {
 
 		// Blending
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	// Being blended in UI controls
 
 // Background -----------------------------------------------------------*/
 		backgroundShader.use();
@@ -146,10 +150,8 @@ int main() {
 		characterShader.setInt("_Texture", 0);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, characterTexture);
-		//glTextureParameteri(characterTexture, GL_CLAMP_TO_EDGE, GL_LINEAR);
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, NULL);
-		
 
 // Render UI ------------------------------------------------------------*/
 	{
@@ -160,6 +162,30 @@ int main() {
 		ImGui::SetNextWindowPos({ 0,0 });
 		ImGui::SetNextWindowSize({ 300, 720 });
 		ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+
+		// Blend Mode
+		{
+			static int modeIndex = 7;
+			ImGui::SliderInt("Blend Mode", &modeIndex, 0, 20);
+			glBlendFunc(GL_SRC_ALPHA, blendModes[modeIndex]);
+		}
+
+		// Change Images 
+		{
+			if (ImGui::Button("Image Set 1")) {
+				noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
+				backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
+				backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Image Set 2")) {
+				noiseTexture = loadTexture("assets/Images/noise2.png", GL_REPEAT, GL_LINEAR);
+				backgroundTexture = loadTexture("assets/Images/underwaterImages2.png", GL_REPEAT, GL_LINEAR);
+				backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
+			}
+		}
 
 		// Background Settings
 		if (ImGui::CollapsingHeader("Background")) {
@@ -186,21 +212,6 @@ int main() {
 				glTextureParameteri(backgroundObjectTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
 			}
 
-			// Change Images 
-			{
-				if (ImGui::Button("Image Set 1")) {
-					noiseTexture = loadTexture("assets/Images/noise.png", GL_REPEAT, GL_LINEAR);
-					backgroundTexture = loadTexture("assets/Images/brick.png", GL_REPEAT, GL_LINEAR);
-					backgroundObjectTexture = loadTexture("assets/Images/smile2.png", GL_REPEAT, GL_LINEAR);
-				}
-
-				if (ImGui::Button("Image Set 2")) {
-					noiseTexture = loadTexture("assets/Images/noise2.png", GL_REPEAT, GL_LINEAR);
-					backgroundTexture = loadTexture("assets/Images/underwaterImages2.png", GL_REPEAT, GL_LINEAR);
-					backgroundObjectTexture = loadTexture("assets/Images/notNemo.png", GL_REPEAT, GL_LINEAR);
-				}
-			}
-
 			// Uniforms
 			{
 				ImGui::SliderFloat("Tiling", &tiling, 0.0, 10.0);
@@ -223,13 +234,16 @@ int main() {
 				glTextureParameteri(characterTexture, GL_TEXTURE_MAG_FILTER, filterModes[filterIndex]);
 			}
 
-			ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
-			//ImGui::SliderFloat("X Scale", &characterScale[0], 0, 1);
-			//ImGui::SliderFloat("Y Scale", &characterScale[1], 0, 1);
-			ImGui::SliderFloat("Scale", &characterScaleRatio, 0, 1);
-			ImGui::SliderFloat("X Distance", &distance[0], 0, 1);
-			ImGui::SliderFloat("Y Distance", &distance[1], 0, 1);
-			ImGui::SliderFloat("Offset", &characterOffset, -3, 2);
+			// Uniforms 
+			{
+				ImGui::SliderFloat("Speed", &characterSpeed, 0, 10);
+				//ImGui::SliderFloat("X Scale", &characterScale[0], 0, 1);
+				//ImGui::SliderFloat("Y Scale", &characterScale[1], 0, 1);
+				ImGui::SliderFloat("Scale", &characterScaleRatio, 0, 1);
+				ImGui::SliderFloat("X Distance", &distance[0], 0, 3);
+				ImGui::SliderFloat("Y Distance", &distance[1], 0, 3);
+				ImGui::SliderFloat("Offset", &characterOffset, -3, 2);
+			}
 		}
 
 		ImGui::End();

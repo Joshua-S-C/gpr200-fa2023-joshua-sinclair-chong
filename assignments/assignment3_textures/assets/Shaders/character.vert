@@ -13,16 +13,21 @@ uniform float _VertOffset;
 
 void main(){
 	UV = vUV;
-	//float vertOffset = 2*log(_ScaleRatio); //idk math this is an approximation stop wasting time on it lol
-	vec3 offset = vec3(vPos.x + (_Distance.x * cos(_Time * _Speed)),
-		abs(_Distance.y * sin(_Time * _Speed)), 0);
+	
+	vec3 offset = vec3(
+		vPos.x + (_Distance.x * cos(_Time * _Speed)),
+		abs(_Distance.y * sin(_Time * _Speed)), 
+		0);
+
 	offset += vPos;
-	gl_Position = vec4(vec2(offset.x * _Scale.x * _ScaleRatio, 
+
+	gl_Position = vec4(
+		vec2(offset.x * _Scale.x * _ScaleRatio,
 		(offset.y + _VertOffset) * _Scale.y * _ScaleRatio), 
 		1.0, 1.0);
-	//gl_Position = vec4(vPos,1.0);	// Default
 }
 
+	//gl_Position = vec4(vPos,1.0);	// Default
 
 /*
 Scale	Offset
@@ -30,5 +35,4 @@ Scale	Offset
 .5		-1
 .75		.33?
 1		0
-go look at desmos
 */
