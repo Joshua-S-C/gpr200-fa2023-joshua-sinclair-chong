@@ -19,6 +19,7 @@ const int SCREEN_WIDTH = 720;
 const int SCREEN_HEIGHT = 720;
 
 int main() {
+// Initialize Window ----------------------------------------------------*/
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -38,12 +39,13 @@ int main() {
 		return 1;
 	}
 
-	//Initialize ImGUI
+// Initialize ImGUI -----------------------------------------------------*/
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
-
+	
+// Cubes ----------------------------------------------------------------*/
 	//Enable back face culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -62,14 +64,15 @@ int main() {
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Set uniforms
+// Set Uniforms ---------------------------------------------------------*/
+
 		shader.use();
 
 		//TODO: Set model matrix uniform
 
 		cubeMesh.draw();
 
-		//Render UI
+// Render UI ------------------------------------------------------------*/
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
