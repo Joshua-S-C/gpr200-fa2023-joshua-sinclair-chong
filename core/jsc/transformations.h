@@ -25,22 +25,45 @@ namespace jsc {
 
 	// Rotation around X (pitch) in radians
 	inline ew::Mat4 RotateX(float rad) {
-		// Look at slides and stuff for this
+		rad *= ew::DEG2RAD;
+		return ew::Mat4(
+			1        , 0        , 0         , 0,
+			0        , cos(rad) , -sin(rad)	, 0,
+			0        , sin(rad) , cos(rad)	, 0,
+			0        , 0        , 0			, 1
+		);
 	};
 
 	// Rotation around Y axis (yaw) in radians
 	inline ew::Mat4 RotateY(float rad) {
-		//
+		rad *= ew::DEG2RAD;
+		return ew::Mat4(
+			cos(rad) , 0        , sin(rad)  , 0,
+			0        , 1        , 0        	, 0,
+			-sin(rad), 0        , cos(rad)	, 0,
+			0        , 0        , 0			, 1
+		);
 	};
 
 	//Rotation around Z axis (roll) in radians
 	inline ew::Mat4 RotateZ(float rad) {
-		//
+		rad *= ew::DEG2RAD;
+		return ew::Mat4(
+			cos(rad) , -sin(rad), 0         , 0,
+			sin(rad) , cos(rad) , 0        	, 0,
+			0        , 0        , 1       	, 0,
+			0        , 0        , 0			, 1
+		);
 	};
 
 	//Translate x,y,z
 	inline ew::Mat4 Translate(ew::Vec3 t) {
-		//
+		return ew::Mat4(
+			1  , 0  , 0  , t.x,
+			0  , 1  , 0  , t.y,
+			0  , 0  , 1  , t.z,
+			0  , 0  , 0  , 1
+		);
 	};
 
 	struct Transform {
@@ -50,7 +73,10 @@ namespace jsc {
 
 // TODO Complete this
 		ew::Mat4  getModelMatrix() const {
-			return Scale(scale);
+			// translattion * rotation () * scale
+			return Translate(position) * RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z) * Scale(scale);
+			//return RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z);
+			//return Scale(scale);
 
 
 		}

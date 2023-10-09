@@ -59,8 +59,6 @@ int main() {
 	
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
-
-
 	jsc::Transform cubeTransform;
 	
 	while (!glfwWindowShouldClose(window)) {
