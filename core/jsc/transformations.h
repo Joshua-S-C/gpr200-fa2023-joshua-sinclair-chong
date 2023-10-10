@@ -71,14 +71,8 @@ namespace jsc {
 		ew::Vec3 rotation = ew::Vec3(0.0, 0.0, 0.0);	// Degrees
 		ew::Vec3 scale = ew::Vec3(1.0, 1.0, 1.0);
 
-// TODO Complete this
 		ew::Mat4  getModelMatrix() const {
-			// translattion * rotation () * scale
-			return Translate(position) * RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z) * Scale(scale);
-			//return RotateX(rotation.x) * RotateY(rotation.y) * RotateZ(rotation.z);
-			//return Scale(scale);
-
-
+			return Translate(position) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) *  Scale(scale);
 		}
 	};
 
