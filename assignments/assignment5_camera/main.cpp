@@ -12,6 +12,9 @@
 #include <ew/procGen.h>
 #include <ew/transform.h>
 
+#include <jsc/transformations.h>
+#include <jsc/texture.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 //Projection will account for aspect ratio!
