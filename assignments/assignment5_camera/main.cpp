@@ -25,6 +25,7 @@ const int NUM_CUBES = 4;
 ew::Transform cubeTransforms[NUM_CUBES];
 
 int main() {
+// Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -44,21 +45,30 @@ int main() {
 		return 1;
 	}
 
-	//Initialize ImGUI
+	// Initialize ImGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	//Enable back face culling
+	// Enable back face culling
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	//Depth testing - required for depth sorting!
+	// Depth testing - required for depth sorting!
 	glEnable(GL_DEPTH_TEST);
 
+// Shader & Camera ------------------------------------------------------*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	
+	jsc::Camera camera;
+	camera.position = {0, 0, 5};
+	camera.target = {0, 0, 0};
+	camera.fov = 60;
+	camera.nearPlane = 0.1;
+	camera.farPlane = 100;
+	camera.orthographic = false;
+
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
 
@@ -69,13 +79,14 @@ int main() {
 		cubeTransforms[i].position.y = i / (NUM_CUBES / 2) - 0.5;
 	}
 
+// Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Set uniforms
+// Uniforms -------------------------------------------------------------*/
 		shader.use();
 
 		//TODO: Set model matrix uniform
@@ -83,16 +94,32 @@ int main() {
 		{
 			//Construct model matrix
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
+			shader.setMat4("_View", camera.ViewMatrix());
+			shader.setMat4("_Projection", camera.ProjectionMatrix());
 			cubeMesh.draw();
 		}
 
-		//Render UI
+// Render UI ------------------------------------------------------------*/
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
+//			if (ImGui::CollapsingHeader("Camera")) {
+			ImGui::Text("Camera");
+				// Orbit checkbox
+				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
+				ImGui::DragFloat3("Target", &camera.position.x, 0.05f);
+				ImGui::Checkbox("Orthgraphic", &camera.orthographic);
+				ImGui::DragFloat("FOV", &camera.fov, 0.05f);
+				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
+				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
+				if (ImGui::Button("Reset")) {
+					camera.position = { 0,0,5 };
+					camera.target = { 0,0,0 };
+//				}
+			}
 			ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
 			{
