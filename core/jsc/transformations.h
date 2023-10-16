@@ -68,9 +68,6 @@ namespace jsc {
 	};
 
 	// Make right hand view space. 
-	// eye = camera position
-	// target = position to look at
-	// up = up axis, usually (0, 1, 0)
 	inline ew::Mat4 LookAt(ew::Vec3 eye, ew::Vec3 target, ew::Vec3 up) {
 		ew::Vec3 f =	(eye - target)		/	(ew::Magnitude(eye - target));
 		ew::Vec3 r =	ew::Cross(up, f)	/	ew::Magnitude(ew::Cross(up, f));
@@ -96,8 +93,6 @@ namespace jsc {
 			f.x      , f.y      , f.z     	, -ew::Dot(f, eye),
 			0        , 0        , 0			, 1
 		);
-
-
 	}
 
 	// Orthographic Projection
@@ -118,6 +113,7 @@ namespace jsc {
 	// Perspective Projection
 	// fov = vertical aspect ratio (radians)
 	inline ew::Mat4 Perspective(float fov, float aspect, float near, float far) {
+		fov *= ew::DEG2RAD;
 		return ew::Mat4(
 			1/(tan(fov/2)*aspect)  , 0		, 0						, 0,
 			0				, 1/tan(fov/2)	, 0						, 0,
@@ -129,10 +125,11 @@ namespace jsc {
 	struct Transform {
 		ew::Vec3 position = ew::Vec3(0.0, 0.0, 0.0);
 		ew::Vec3 rotation = ew::Vec3(0.0, 0.0, 0.0);	// Degrees
-		ew::Vec3 scale = ew::Vec3(1.0, 1.0, 1.0);
+		ew::Vec3 scale =	ew::Vec3(1.0, 1.0, 1.0);
 
 		ew::Mat4  getModelMatrix() const {
-			return Translate(position) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) *  Scale(scale);
+			//return jsc::Translate(position) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Scale(scale);
+			return jsc::Scale(scale) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Translate(position);
 		}
 	};
 
@@ -146,14 +143,25 @@ namespace jsc {
 		bool orthographic;	// Perspective or Ortho
 		float orthoSize;	// Height of Ortho frustum
 		
+		Camera::Camera(){
+			position = { 0, 0, 5 };
+			target = { 0, 0, 0 };
+			fov = 60;
+			aspectRatio = 1080 / 720;
+			orthoSize = 6;
+			nearPlane = 0.1;
+			farPlane = 100;
+			orthographic = false;
+		};
+
 		// World -> View
 		ew::Mat4 ViewMatrix() {			
-			LookAt(position, target, ew::Vec3(0, 1, 0));
+			return LookAt(position, target, ew::Vec3(0, 1, 0));
 		}
 
 		// View -> Clip
 		ew::Mat4 ProjectionMatrix() {	
-		
+			return (orthographic) ? Orthographic(orthoSize, aspectRatio, nearPlane, farPlane) : Perspective(fov, aspectRatio, nearPlane, farPlane);
 		}
 	};
 }

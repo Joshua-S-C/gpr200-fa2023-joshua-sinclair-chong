@@ -62,12 +62,7 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	
 	jsc::Camera camera;
-	camera.position = {0, 0, 5};
-	camera.target = {0, 0, 0};
-	camera.fov = 60;
-	camera.nearPlane = 0.1;
-	camera.farPlane = 100;
-	camera.orthographic = false;
+	camera.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;	
 
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
@@ -86,10 +81,10 @@ int main() {
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-// Uniforms -------------------------------------------------------------*/
+// Uniforms & Draw ------------------------------------------------------*/
+		camera.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
 		shader.use();
 
-		//TODO: Set model matrix uniform
 		for (size_t i = 0; i < NUM_CUBES; i++)
 		{
 			//Construct model matrix
@@ -106,11 +101,10 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
-//			if (ImGui::CollapsingHeader("Camera")) {
 			ImGui::Text("Camera");
 				// Orbit checkbox
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
-				ImGui::DragFloat3("Target", &camera.position.x, 0.05f);
+				ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
 				ImGui::Checkbox("Orthgraphic", &camera.orthographic);
 				ImGui::DragFloat("FOV", &camera.fov, 0.05f);
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
@@ -118,8 +112,7 @@ int main() {
 				if (ImGui::Button("Reset")) {
 					camera.position = { 0,0,5 };
 					camera.target = { 0,0,0 };
-//				}
-			}
+				}
 			ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
 			{
@@ -131,9 +124,8 @@ int main() {
 				}
 				ImGui::PopID();
 			}
-			ImGui::Text("Camera");
+
 			ImGui::End();
-			
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
