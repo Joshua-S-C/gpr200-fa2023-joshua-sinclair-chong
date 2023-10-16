@@ -128,7 +128,6 @@ namespace jsc {
 		ew::Vec3 scale =	ew::Vec3(1.0, 1.0, 1.0);
 
 		ew::Mat4  getModelMatrix() const {
-			//return jsc::Translate(position) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Scale(scale);
 			return jsc::Scale(scale) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Translate(position);
 		}
 	};

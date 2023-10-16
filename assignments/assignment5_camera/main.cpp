@@ -62,7 +62,7 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	
 	jsc::Camera camera;
-	camera.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;	
+	camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
@@ -82,7 +82,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 // Uniforms & Draw ------------------------------------------------------*/
-		camera.aspectRatio = SCREEN_WIDTH / SCREEN_HEIGHT;
+		camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 		shader.use();
 
 		for (size_t i = 0; i < NUM_CUBES; i++)
@@ -99,8 +99,9 @@ int main() {
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
-
-			ImGui::Begin("Settings");
+			ImGui::SetNextWindowPos({ 0,0 });
+			ImGui::SetNextWindowSize({ 300, 720 });
+			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 			ImGui::Text("Camera");
 				// Orbit checkbox
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
@@ -109,9 +110,15 @@ int main() {
 				ImGui::DragFloat("FOV", &camera.fov, 0.05f);
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
 				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
+				ImGui::DragFloat("Aspect Ratio Manual", &camera.aspectRatio, 0.05f);
 				if (ImGui::Button("Reset")) {
-					camera.position = { 0,0,5 };
-					camera.target = { 0,0,0 };
+					camera.position = { 0, 0, 5 };
+					camera.target = { 0, 0, 0 };
+					camera.fov = 60;
+					camera.orthoSize = 6;
+					camera.nearPlane = 0.1;
+					camera.farPlane = 100;
+					camera.orthographic = false;
 				}
 			ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
