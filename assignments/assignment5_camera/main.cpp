@@ -82,7 +82,8 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 // Uniforms & Draw ------------------------------------------------------*/
-		camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
+		//camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
+		camera.aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
 		shader.use();
 
 		for (size_t i = 0; i < NUM_CUBES; i++)
@@ -107,6 +108,7 @@ int main() {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
 				ImGui::Checkbox("Orthgraphic", &camera.orthographic);
+				ImGui::DragFloat("Ortho Height", &camera.orthoSize, 0.05f);
 				ImGui::DragFloat("FOV", &camera.fov, 0.05f);
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
 				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
