@@ -56,7 +56,7 @@ namespace jsc {
 	struct CameraControls {
 		double prevMouseX, prevMouseY;	// Mouse position from previous frame
 		float yaw = 0, pitch = 0;		// Degrees
-		float mouseSens = 2.1f;			// Mouse speed
+		float mouseSens = 3.0f;			// Mouse speed
 		bool firstMouse = true;			// Flag for to store initial mouse position
 		float moveSpd = 5.0f;			// its in the name
 	};
@@ -71,35 +71,38 @@ namespace jsc {
 			return;
 		}
 
+		// Hides cursor
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
-
+		
+		// Prevents bug where camera moves as soon as click
 		if (controls->firstMouse) {
 			controls->firstMouse = false;
 			controls->prevMouseX = mouseX;
 			controls->prevMouseY = mouseY;
 		}
 
-		//TODO: Get mouse position delta for this frame
+		// Get mouse delta, Add to yaw and pitch, Clamp pitch 
 		double mouseXD = mouseX - controls->prevMouseX, mouseYD = mouseY - controls->prevMouseY;
 
-		//TODO: Add to yaw and pitch
 		controls->yaw += mouseXD;
 		controls->pitch -= mouseYD;
 
-		//TODO: Clamp pitch between -89 and 89 degrees
 		if (controls->pitch > 89) controls->pitch = 89;
 		if (controls->pitch < -89) controls->pitch = -89;
 
 		controls->prevMouseX = mouseX;
 		controls->prevMouseY = mouseY;
 
+		// Copy of pitch & yaw cuz I don't like having a ton of math in my forward vector
+		ew::Vec2 PY = { controls->yaw * ew::DEG2RAD, controls->pitch * ew::DEG2RAD };
+
 		ew::Vec3 forward = {
-			sin(controls->yaw * ew::DEG2RAD) * cos(controls->pitch * ew::DEG2RAD),
-			sin(controls->pitch * ew::DEG2RAD),
-			-cos(controls->yaw * ew::DEG2RAD) * cos(controls->pitch * ew::DEG2RAD) };
+			sin(PY.x) * cos(PY.y),
+			sin(PY.y),
+			-cos(PY.x) * cos(PY.y) };
 		
 
 		cam->target = cam->position + forward;
