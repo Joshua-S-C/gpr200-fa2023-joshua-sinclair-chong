@@ -56,7 +56,7 @@ namespace jsc {
 	struct CameraControls {
 		double prevMouseX, prevMouseY;	// Mouse position from previous frame
 		float yaw = 0, pitch = 0;		// Degrees
-		float mouseSens = 1.0f;			// Mouse speed
+		float mouseSens = 0.5f;			// Mouse speed
 		bool firstMouse = true;			// Flag for to store initial mouse position
 		float moveSpd = 0.1f;			// its in the name
 	};
@@ -104,21 +104,28 @@ namespace jsc {
 
 		// Change camera position
 		
-		// TODO: Using camera forward and world up (0,1,0), construct camera right and up vectors. Graham-schmidt process!
+		// Graham-schmidt !!
 		// TODO: Change to use normalize
 		ew::Vec3 right = ew::Cross(ew::Vec3{0,1,0}, forward) / ew::Magnitude(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
 		ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
 
-		//TODO: Keybord controls
+		// Keybord controls
 		if (glfwGetKey(window, GLFW_KEY_W)) 
 			cam->position += forward * controls->moveSpd;
 		if (glfwGetKey(window, GLFW_KEY_S)) 
 			cam->position -= forward * controls->moveSpd;
 
 		if (glfwGetKey(window, GLFW_KEY_A)) 
-			cam->position += forward * controls->moveSpd;
+			cam->position += right * controls->moveSpd;
 		if (glfwGetKey(window, GLFW_KEY_D)) 
-			cam->position += forward * controls->moveSpd;
+			cam->position -= right * controls->moveSpd;
+
+		if (glfwGetKey(window, GLFW_KEY_Q)) 
+			cam->position += up * controls->moveSpd;
+		if (glfwGetKey(window, GLFW_KEY_E)) 
+			cam->position -= up * controls->moveSpd;
+
+		// TODO : More advanced controls
 
 
 		cam->target = cam->position + forward;
