@@ -19,7 +19,7 @@ namespace jsc {
 			position = { 0, 0, 5 };
 			target = { 0, 0, 0 };
 			fov = 60;
-			aspectRatio = 1080 / 720;
+			aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
 			orthoSize = 6;
 			nearPlane = 0.1;
 			farPlane = 100;
@@ -35,6 +35,22 @@ namespace jsc {
 		ew::Mat4 ProjectionMatrix() {
 			return (orthographic) ? Orthographic(orthoSize, aspectRatio, nearPlane, farPlane) : Perspective(fov, aspectRatio, nearPlane, farPlane);
 		}
+
+		// Updates Aspect Ratio (that's the name)
+		void UpdateAspectRatio() {
+			aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
+		}
+
+		// Reset to default values
+		void Reset() {
+			position = { 0, 0, 5 };
+			target = { 0, 0, 0 };
+			fov = 60;
+			orthoSize = 6;
+			nearPlane = 0.1;
+			farPlane = 100;
+			orthographic = false;
+		}
 	};
 
 	struct CameraControls {
@@ -46,6 +62,32 @@ namespace jsc {
 	};
 
 	void moveCamera(GLFWwindow* window, Camera* cam, CameraControls* controls) {
+		// If RMB not held, release cursor
+		if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			controls->firstMouse = true;
+			return;
+		}
 
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+
+		if (controls->firstMouse) {
+			controls->firstMouse = false;
+			controls->prevMouseX = mouseX;
+			controls->prevMouseY = mouseY;
+		}
+
+		//TODO: Get mouse position delta for this frame
+		//TODO: Add to yaw and pitch
+		//TODO: Clamp pitch between -89 and 89 degrees
+
+		controls->prevMouseX = mouseX;
+		controls->prevMouseY = mouseY;
+
+		ew::Vec3 forward = {0,0,0};	// actually calculate this
+		cam->target = cam->position + forward;
 	}
 }

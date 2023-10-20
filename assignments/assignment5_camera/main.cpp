@@ -59,18 +59,13 @@ int main() {
 	// Depth testing - required for depth sorting!
 	glEnable(GL_DEPTH_TEST);
 
-// Shader & Camera ------------------------------------------------------*/
+// Shader , Camera & Cubes ----------------------------------------------*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
-	
 	jsc::Camera camera;
-	camera.aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
-
 	jsc::CameraControls cameraControls;
 
-	//Cube mesh
+	//Cube mesh & positions
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
-
-	//Cube positions
 	for (size_t i = 0; i < NUM_CUBES; i++)
 	{
 		cubeTransforms[i].position.x = i % (NUM_CUBES / 2) - 0.5;
@@ -84,18 +79,15 @@ int main() {
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		jsc::moveCamera(window, &camera, &cameraControls);
-
 // Uniforms & Draw ------------------------------------------------------*/
-		camera.aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
+		jsc::moveCamera(window, &camera, &cameraControls);
+		camera.UpdateAspectRatio();
+		
 		shader.use();
-
-		for (size_t i = 0; i < NUM_CUBES; i++)
-		{
-			//Construct model matrix
+		shader.setMat4("_View", camera.ViewMatrix());
+		shader.setMat4("_Projection", camera.ProjectionMatrix());
+		for (size_t i = 0; i < NUM_CUBES; i++) {
 			shader.setMat4("_Model", cubeTransforms[i].getModelMatrix());
-			shader.setMat4("_View", camera.ViewMatrix());
-			shader.setMat4("_Projection", camera.ProjectionMatrix());
 			cubeMesh.draw();
 		}
 
@@ -118,19 +110,10 @@ int main() {
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
 				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
 				ImGui::DragFloat("Aspect Ratio Manual", &camera.aspectRatio, 0.05f);
-				if (ImGui::Button("Reset")) {
-					camera.position = { 0, 0, 5 };
-					camera.target = { 0, 0, 0 };
-					camera.fov = 60;
-					camera.orthoSize = 6;
-					camera.nearPlane = 0.1;
-					camera.farPlane = 100;
-					camera.orthographic = false;
-				}
+				if (ImGui::Button("Reset")) camera.Reset();
 
 			ImGui::Text("Cubes");
-			for (size_t i = 0; i < NUM_CUBES; i++)
-			{
+			for (size_t i = 0; i < NUM_CUBES; i++) {
 				ImGui::PushID(i);
 				if (ImGui::CollapsingHeader("Transform")) {
 					ImGui::DragFloat3("Position", &cubeTransforms[i].position.x, 0.05f);
