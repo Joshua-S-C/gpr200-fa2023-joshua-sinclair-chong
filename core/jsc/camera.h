@@ -56,10 +56,12 @@ namespace jsc {
 	struct CameraControls {
 		double prevMouseX, prevMouseY;	// Mouse position from previous frame
 		float yaw = 0, pitch = 0;		// Degrees
-		float mouseSens = 0.1f;			// Mouse speed
+		float mouseSens = 2.1f;			// Mouse speed
 		bool firstMouse = true;			// Flag for to store initial mouse position
 		float moveSpd = 5.0f;			// its in the name
 	};
+
+	// TODO : Add controls like minecraft fly lol (Shift adds spd, space goes up, ctrl goes down)
 
 	void moveCamera(GLFWwindow* window, Camera* cam, CameraControls* controls) {
 		// If RMB not held, release cursor
@@ -81,13 +83,25 @@ namespace jsc {
 		}
 
 		//TODO: Get mouse position delta for this frame
+		double mouseXD = mouseX - controls->prevMouseX, mouseYD = mouseY - controls->prevMouseY;
+
 		//TODO: Add to yaw and pitch
+		controls->yaw += mouseXD;
+		controls->pitch -= mouseYD;
+
 		//TODO: Clamp pitch between -89 and 89 degrees
+		if (controls->pitch > 89) controls->pitch = 89;
+		if (controls->pitch < -89) controls->pitch = -89;
 
 		controls->prevMouseX = mouseX;
 		controls->prevMouseY = mouseY;
 
-		ew::Vec3 forward = {0,0,0};	// actually calculate this
+		ew::Vec3 forward = {
+			sin(controls->yaw * ew::DEG2RAD) * cos(controls->pitch * ew::DEG2RAD),
+			sin(controls->pitch * ew::DEG2RAD),
+			-cos(controls->yaw * ew::DEG2RAD) * cos(controls->pitch * ew::DEG2RAD) };
+		
+
 		cam->target = cam->position + forward;
 	}
 }
