@@ -56,9 +56,9 @@ namespace jsc {
 	struct CameraControls {
 		double prevMouseX, prevMouseY;	// Mouse position from previous frame
 		float yaw = 0, pitch = 0;		// Degrees
-		float mouseSens = 3.0f;			// Mouse speed
+		float mouseSens = 1.0f;			// Mouse speed
 		bool firstMouse = true;			// Flag for to store initial mouse position
-		float moveSpd = 5.0f;			// its in the name
+		float moveSpd = 0.1f;			// its in the name
 	};
 
 	// TODO : Add controls like minecraft fly lol (Shift adds spd, space goes up, ctrl goes down)
@@ -84,11 +84,9 @@ namespace jsc {
 			controls->prevMouseY = mouseY;
 		}
 
-		// Get mouse delta, Add to yaw and pitch, Clamp pitch 
-		double mouseXD = mouseX - controls->prevMouseX, mouseYD = mouseY - controls->prevMouseY;
-
-		controls->yaw += mouseXD;
-		controls->pitch -= mouseYD;
+		// Add mouse delta to yaw and pitch, Clamp pitch 
+		controls->yaw += (mouseX - controls->prevMouseX) * controls->mouseSens;
+		controls->pitch -= (mouseY - controls->prevMouseY) * controls->mouseSens;
 
 		if (controls->pitch > 89) controls->pitch = 89;
 		if (controls->pitch < -89) controls->pitch = -89;
@@ -96,14 +94,32 @@ namespace jsc {
 		controls->prevMouseX = mouseX;
 		controls->prevMouseY = mouseY;
 
-		// Copy of pitch & yaw cuz I don't like having a ton of math in my forward vector
+		// Copy of pitch & yaw cuz I don't like having a ton of math in my vector
 		ew::Vec2 PY = { controls->yaw * ew::DEG2RAD, controls->pitch * ew::DEG2RAD };
-
 		ew::Vec3 forward = {
 			sin(PY.x) * cos(PY.y),
 			sin(PY.y),
 			-cos(PY.x) * cos(PY.y) };
 		
+
+		// Change camera position
+		
+		// TODO: Using camera forward and world up (0,1,0), construct camera right and up vectors. Graham-schmidt process!
+		// TODO: Change to use normalize
+		ew::Vec3 right = ew::Cross(ew::Vec3{0,1,0}, forward) / ew::Magnitude(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
+		ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
+
+		//TODO: Keybord controls
+		if (glfwGetKey(window, GLFW_KEY_W)) 
+			cam->position += forward * controls->moveSpd;
+		if (glfwGetKey(window, GLFW_KEY_S)) 
+			cam->position -= forward * controls->moveSpd;
+
+		if (glfwGetKey(window, GLFW_KEY_A)) 
+			cam->position += forward * controls->moveSpd;
+		if (glfwGetKey(window, GLFW_KEY_D)) 
+			cam->position += forward * controls->moveSpd;
+
 
 		cam->target = cam->position + forward;
 	}

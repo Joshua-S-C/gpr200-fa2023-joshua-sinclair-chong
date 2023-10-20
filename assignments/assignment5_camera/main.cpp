@@ -112,6 +112,8 @@ int main() {
 				ImGui::DragFloat("Aspect Ratio Manual", &camera.aspectRatio, 0.05f);
 				if (ImGui::Button("Reset")) camera.Reset();
 
+			ImGui::Text("Camera Controls (Coming Soon!)");
+
 			ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++) {
 				ImGui::PushID(i);
