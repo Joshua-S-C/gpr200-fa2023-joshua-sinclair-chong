@@ -14,6 +14,7 @@
 
 #include <jsc/transformations.h>
 #include <jsc/texture.h>
+#include <jsc/camera.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
@@ -62,7 +63,9 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	
 	jsc::Camera camera;
-	camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
+	camera.aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
+
+	jsc::CameraControls cameraControls;
 
 	//Cube mesh
 	ew::Mesh cubeMesh(ew::createCube(0.5f));
@@ -81,8 +84,9 @@ int main() {
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		jsc::moveCamera(window, &camera, &cameraControls);
+
 // Uniforms & Draw ------------------------------------------------------*/
-		//camera.aspectRatio = (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT;
 		camera.aspectRatio = (float)ImGui::GetIO().DisplaySize.x / (float)ImGui::GetIO().DisplaySize.y;
 		shader.use();
 
@@ -103,6 +107,7 @@ int main() {
 			ImGui::SetNextWindowPos({ 0,0 });
 			ImGui::SetNextWindowSize({ 300, 720 });
 			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+
 			ImGui::Text("Camera");
 				// Orbit checkbox
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
@@ -122,6 +127,7 @@ int main() {
 					camera.farPlane = 100;
 					camera.orthographic = false;
 				}
+
 			ImGui::Text("Cubes");
 			for (size_t i = 0; i < NUM_CUBES; i++)
 			{

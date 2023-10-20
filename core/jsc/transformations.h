@@ -131,36 +131,4 @@ namespace jsc {
 			return jsc::Scale(scale) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Translate(position);
 		}
 	};
-
-	struct Camera {
-		ew::Vec3 position;	// Camera body position
-		ew::Vec3 target;	// Position to look at
-		float fov;			// Vertical FOV (degrees)
-		float aspectRatio;	// Screen Width / Screen Height
-		float nearPlane;	// Near plane distance (+Z)
-		float farPlane;		// Far plane distance (+Z)
-		bool orthographic;	// Perspective or Ortho
-		float orthoSize;	// Height of Ortho frustum
-		
-		Camera::Camera(){
-			position = { 0, 0, 5 };
-			target = { 0, 0, 0 };
-			fov = 60;
-			aspectRatio = 1080 / 720;
-			orthoSize = 6;
-			nearPlane = 0.1;
-			farPlane = 100;
-			orthographic = false;
-		};
-
-		// World -> View
-		ew::Mat4 ViewMatrix() {			
-			return LookAt(position, target, ew::Vec3(0, 1, 0));
-		}
-
-		// View -> Clip
-		ew::Mat4 ProjectionMatrix() {	
-			return (orthographic) ? Orthographic(orthoSize, aspectRatio, nearPlane, farPlane) : Perspective(fov, aspectRatio, nearPlane, farPlane);
-		}
-	};
 }
