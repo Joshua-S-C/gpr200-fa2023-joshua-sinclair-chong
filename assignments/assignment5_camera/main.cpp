@@ -27,6 +27,8 @@ ew::Transform cubeTransforms[NUM_CUBES];
 
 float prevTime;
 
+
+
 int main() {
 // Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
@@ -110,6 +112,12 @@ int main() {
 
 			ImGui::Checkbox("Orthgraphic", &camera.orthographic);
 			if (ImGui::Button("Reset Camera")) camera.Reset();
+
+			int itemIndex;
+			ImGui::Combo("Select Target", &itemIndex, "Cube 1\0Cube 2\0Cube 3\0Cube 4");
+			// TODO : The thing
+			if (ImGui::Button("Focus Object")) cameraFocus(&camera, &cameraControls, deltaTime, cubeTransforms[itemIndex].position);
+
 
 			if (ImGui::CollapsingHeader("Control Settings")) {
 				ImGui::DragFloat("Sensitivity", &cameraControls.mouseSens ,0.05f);

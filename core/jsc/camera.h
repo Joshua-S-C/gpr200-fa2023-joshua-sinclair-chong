@@ -120,12 +120,8 @@ namespace jsc {
 
 		// Change camera position
 		// Graham-schmidt !!
-		// TODO: Change to use normalize
 		ew::Vec3 right = ew::Normalize(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
 		ew::Vec3 up = ew::Normalize(ew::Cross(right, forward));
-		
-		//ew::Vec3 right = ew::Cross(ew::Vec3{0,1,0}, forward) / ew::Magnitude(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
-		//ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
 
 		// Keybord controls
 		float movement = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) ? controls->sprintSpd : controls->moveSpd) * deltaTime;
@@ -143,5 +139,19 @@ namespace jsc {
 
 
 		cam->target = cam->position + forward;
+	}
+
+	void cameraFocus(Camera* cam, CameraControls* controls, float deltaTime, ew::Vec3 newTarget) {
+		// Target Set
+		cam->target = newTarget;
+
+		// Set camera position
+		ew::Vec2 PY = { controls->yaw * ew::DEG2RAD, controls->pitch * ew::DEG2RAD };
+		ew::Vec3 backwards = {
+			sin(PY.x) * cos(PY.y),
+			sin(PY.y),
+			-cos(PY.x) * cos(PY.y) };
+
+		cam->position = cam->target - backwards;
 	}
 }
