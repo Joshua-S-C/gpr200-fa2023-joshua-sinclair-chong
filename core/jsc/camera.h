@@ -119,11 +119,13 @@ namespace jsc {
 		
 
 		// Change camera position
-		
 		// Graham-schmidt !!
 		// TODO: Change to use normalize
-		ew::Vec3 right = ew::Cross(ew::Vec3{0,1,0}, forward) / ew::Magnitude(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
-		ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
+		ew::Vec3 right = ew::Normalize(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
+		ew::Vec3 up = ew::Normalize(ew::Cross(right, forward));
+		
+		//ew::Vec3 right = ew::Cross(ew::Vec3{0,1,0}, forward) / ew::Magnitude(ew::Cross(ew::Vec3{ 0,1,0 }, forward));
+		//ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
 
 		// Keybord controls
 		float movement = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) ? controls->sprintSpd : controls->moveSpd) * deltaTime;

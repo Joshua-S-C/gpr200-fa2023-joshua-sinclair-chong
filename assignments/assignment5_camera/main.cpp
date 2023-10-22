@@ -62,7 +62,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	// Delta Time!
-	float time = (float)glfwGetTime(); //Timestamp of current frame
+	float time = (float)glfwGetTime(); 
 	float deltaTime = time - prevTime;
 	prevTime = time;
 
