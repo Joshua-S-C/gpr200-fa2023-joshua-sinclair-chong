@@ -66,8 +66,8 @@ namespace jsc {
 			yaw = 0, pitch = 0;
 			mouseSens = 0.3f;
 			firstMouse = true;
-			moveSpd = 0.1f;
-			sprintSpd = 1.0f;
+			moveSpd = 0.05f;
+			sprintSpd = 0.1f;
 		}
 
 		// Reset to default values
@@ -141,17 +141,21 @@ namespace jsc {
 		cam->target = cam->position + forward;
 	}
 
+	// TODO : Maaaybe make it tween (smooth transiton)
 	void cameraFocus(Camera* cam, CameraControls* controls, float deltaTime, ew::Vec3 newTarget) {
 		// Target Set
 		cam->target = newTarget;
 
 		// Set camera position
 		ew::Vec2 PY = { controls->yaw * ew::DEG2RAD, controls->pitch * ew::DEG2RAD };
-		ew::Vec3 backwards = {
+		ew::Vec3 forward = {
 			sin(PY.x) * cos(PY.y),
 			sin(PY.y),
 			-cos(PY.x) * cos(PY.y) };
 
-		cam->position = cam->target - backwards;
+		cam->position = cam->target - forward;
 	}
+
+	// TODO : Add a function to move the camera around an object (don't change the target, like the orbiting thing)
+
 }

@@ -27,8 +27,6 @@ ew::Transform cubeTransforms[NUM_CUBES];
 
 float prevTime;
 
-
-
 int main() {
 // Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
@@ -63,10 +61,9 @@ int main() {
 	// Depth testing - required for depth sorting!
 	glEnable(GL_DEPTH_TEST);
 
-	// Delta Time!
-	float time = (float)glfwGetTime(); 
-	float deltaTime = time - prevTime;
-	prevTime = time;
+
+	// For UI
+	int itemIndex = 0;
 
 // Shader , Camera & Cubes ----------------------------------------------*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
@@ -87,6 +84,11 @@ int main() {
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		//Clear both color buffer AND depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		// Delta Time!
+		float time = (float)glfwGetTime(); 
+		float deltaTime = time - prevTime;
+		prevTime = time;
 
 // Uniforms & Draw ------------------------------------------------------*/
 		jsc::moveCamera(window, &camera, &cameraControls, prevTime);
@@ -101,33 +103,26 @@ int main() {
 		}
 
 // Render UI ------------------------------------------------------------*/
-		// TODO : Add option to select a target and then have the camera focus on that object?? . Maybe even make it tween althought it would be hard cuz the subesdon't have any general position member
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
-			ImGui::SetNextWindowPos({ 0,0 });
-			ImGui::SetNextWindowSize({ 300, 720 });
-			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+			
+			ImGui::SetNextWindowPos({ 0,0 }); ImGui::SetNextWindowSize({ 300, 400 });
+			ImGui::Begin("Camera", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
-			ImGui::Checkbox("Orthgraphic", &camera.orthographic);
 			if (ImGui::Button("Reset Camera")) camera.Reset();
+			ImGui::SameLine();
+			if (ImGui::Button("Reset Controls")) cameraControls.Reset();
 
-			int itemIndex;
-			ImGui::Combo("Select Target", &itemIndex, "Cube 1\0Cube 2\0Cube 3\0Cube 4");
-			// TODO : The thing
-			if (ImGui::Button("Focus Object")) cameraFocus(&camera, &cameraControls, deltaTime, cubeTransforms[itemIndex].position);
-
-
-			if (ImGui::CollapsingHeader("Control Settings")) {
+			ImGui::Text("Control Settings");
 				ImGui::DragFloat("Sensitivity", &cameraControls.mouseSens ,0.05f);
 				ImGui::DragFloat("Speed", &cameraControls.moveSpd ,0.05f);
 				ImGui::DragFloat("Sprint Speed", &cameraControls.sprintSpd ,0.05f);
-				if (ImGui::Button("Reset")) cameraControls.Reset();
-			}
 			
-			if (ImGui::CollapsingHeader("Camera Settings")) {
+			ImGui::Text("Camera Settings");
 				// Orbit checkbox
+				ImGui::Checkbox("Orthgraphic", &camera.orthographic);
 				ImGui::DragFloat3("Position", &camera.position.x, 0.05f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.05f);
 				ImGui::DragFloat("Ortho Height", &camera.orthoSize, 0.05f);
@@ -135,21 +130,21 @@ int main() {
 				ImGui::DragFloat("Near Plane", &camera.nearPlane, 0.05f);
 				ImGui::DragFloat("Far Plane", &camera.farPlane, 0.05f);
 				ImGui::DragFloat("Aspect Ratio Manual", &camera.aspectRatio, 0.05f);
-			}
-
-			if (ImGui::CollapsingHeader("Cubes")) {
-				for (size_t i = 0; i < NUM_CUBES; i++) {
-					ImGui::PushID(i);
-					if (ImGui::CollapsingHeader("Transform")) {
-						ImGui::DragFloat3("Position", &cubeTransforms[i].position.x, 0.05f);
-						ImGui::DragFloat3("Rotation", &cubeTransforms[i].rotation.x, 1.0f);
-						ImGui::DragFloat3("Scale", &cubeTransforms[i].scale.x, 0.05f);
-					}
-					ImGui::PopID();
-				}
-			}
 
 			ImGui::End();
+
+
+			ImGui::SetNextWindowPos({ 0,400 }); ImGui::SetNextWindowSize({ 300, 720 });
+			ImGui::Begin("Transform", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+
+			ImGui::Combo("Target", &itemIndex, "Cube 1\0Cube 2\0Cube 3\0Cube 4");
+			if (ImGui::Button("Focus Object")) cameraFocus(&camera, &cameraControls, deltaTime, cubeTransforms[itemIndex].position);
+			ImGui::DragFloat3("Position", &cubeTransforms[itemIndex].position.x, 0.05f);
+			ImGui::DragFloat3("Rotation", &cubeTransforms[itemIndex].rotation.x, 1.0f);
+			ImGui::DragFloat3("Scale", &cubeTransforms[itemIndex].scale.x, 0.05f);
+
+			ImGui::End();
+
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
