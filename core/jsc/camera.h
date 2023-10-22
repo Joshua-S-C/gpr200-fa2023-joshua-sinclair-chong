@@ -4,8 +4,8 @@
 #include "../ew/ewMath/ewMath.h"
 
 namespace jsc {
-	// Uses functions from transformations.h
 	struct Camera {
+	// Uses functions from transformations.h
 		ew::Vec3 position;	// Camera body position
 		ew::Vec3 target;	// Position to look at
 		float fov;			// Vertical FOV (degrees)
@@ -55,15 +55,32 @@ namespace jsc {
 
 	struct CameraControls {
 		double prevMouseX, prevMouseY;	// Mouse position from previous frame
-		float yaw = 0, pitch = 0;		// Degrees
-		float mouseSens = 0.5f;			// Mouse speed
-		bool firstMouse = true;			// Flag for to store initial mouse position
-		float moveSpd = 0.1f;			// its in the name
+		float yaw, pitch;	// Degrees
+		float mouseSens;	// Mouse speed
+		bool firstMouse;	// Flag for to store initial mouse position
+		float moveSpd;		// its in the name
+		float sprintSpd;	// When sprinting
+		bool enabled;		// If controls are enabled. Only turned off for the orbiting // TODO : Implement this
+
+		CameraControls::CameraControls() {
+			yaw = 0, pitch = 0;
+			mouseSens = 0.3f;
+			firstMouse = true;
+			moveSpd = 0.1f;
+			sprintSpd = 1.0f;
+		}
+
+		// Reset to default values
+		void Reset() {
+			yaw = 0, pitch = 0;		
+			mouseSens = 0.3f;			
+			firstMouse = true;			
+			moveSpd = 0.1f;	
+			sprintSpd = 1.0f;
+		}
 	};
 
-	// TODO : Add controls like minecraft fly lol (Shift adds spd, space goes up, ctrl goes down)
-
-	void moveCamera(GLFWwindow* window, Camera* cam, CameraControls* controls) {
+	void moveCamera(GLFWwindow* window, Camera* cam, CameraControls* controls, float deltaTime) {
 		// If RMB not held, release cursor
 		if (!glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2)) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -71,8 +88,7 @@ namespace jsc {
 			return;
 		}
 
-		// Hides cursor
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);	// Hides cursor
 
 		double mouseX, mouseY;
 		glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -84,7 +100,7 @@ namespace jsc {
 			controls->prevMouseY = mouseY;
 		}
 
-		// Add mouse delta to yaw and pitch, Clamp pitch 
+		// Add mouse delta to yaw and pitch, clamp pitch 
 		controls->yaw += (mouseX - controls->prevMouseX) * controls->mouseSens;
 		controls->pitch -= (mouseY - controls->prevMouseY) * controls->mouseSens;
 
@@ -110,20 +126,16 @@ namespace jsc {
 		ew::Vec3 up = ew::Cross(right, forward) / ew::Magnitude(ew::Cross(right, forward));;
 
 		// Keybord controls
-		if (glfwGetKey(window, GLFW_KEY_W)) 
-			cam->position += forward * controls->moveSpd;
-		if (glfwGetKey(window, GLFW_KEY_S)) 
-			cam->position -= forward * controls->moveSpd;
+		float movement = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) ? controls->sprintSpd : controls->moveSpd) * deltaTime;
 
-		if (glfwGetKey(window, GLFW_KEY_A)) 
-			cam->position += right * controls->moveSpd;
-		if (glfwGetKey(window, GLFW_KEY_D)) 
-			cam->position -= right * controls->moveSpd;
+		if (glfwGetKey(window, GLFW_KEY_W)) cam->position += forward * movement;
+		if (glfwGetKey(window, GLFW_KEY_S)) cam->position -= forward * movement;
 
-		if (glfwGetKey(window, GLFW_KEY_Q)) 
-			cam->position += up * controls->moveSpd;
-		if (glfwGetKey(window, GLFW_KEY_E)) 
-			cam->position -= up * controls->moveSpd;
+		if (glfwGetKey(window, GLFW_KEY_A)) cam->position += right * movement;
+		if (glfwGetKey(window, GLFW_KEY_D)) cam->position -= right * movement;
+
+		if (glfwGetKey(window, GLFW_KEY_Q)) cam->position += up * movement;
+		if (glfwGetKey(window, GLFW_KEY_E)) cam->position -= up * movement;
 
 		// TODO : More advanced controls
 
