@@ -74,9 +74,9 @@ namespace jsc {
 		void Reset() {
 			yaw = 0, pitch = 0;		
 			mouseSens = 0.3f;			
-			firstMouse = true;			
-			moveSpd = 0.1f;	
-			sprintSpd = 1.0f;
+			firstMouse = false;			
+			moveSpd = 0.05f;	
+			sprintSpd = 0.1f;
 		}
 	};
 
@@ -142,6 +142,7 @@ namespace jsc {
 	}
 
 	// TODO : Maaaybe make it tween (smooth transiton)
+	// Currently broekn it makes the camera really fast after focusing for some reason (somethingto do with setting the target I think)
 	void cameraFocus(Camera* cam, CameraControls* controls, float deltaTime, ew::Vec3 newTarget) {
 		// Target Set
 		cam->target = newTarget;

@@ -110,10 +110,9 @@ int main() {
 			
 			ImGui::SetNextWindowPos({ 0,0 }); ImGui::SetNextWindowSize({ 300, 400 });
 			ImGui::Begin("Camera", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
-
-			if (ImGui::Button("Reset Camera")) camera.Reset();
-			ImGui::SameLine();
-			if (ImGui::Button("Reset Controls")) cameraControls.Reset();
+	
+			
+			if (ImGui::Button("Reset")) { camera.Reset(); cameraControls.Reset(); }
 
 			ImGui::Text("Control Settings");
 				ImGui::DragFloat("Sensitivity", &cameraControls.mouseSens ,0.05f);
