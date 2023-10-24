@@ -137,7 +137,7 @@ int main() {
 			ImGui::Begin("Transform", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
 			ImGui::Combo("Target", &itemIndex, "Cube 1\0Cube 2\0Cube 3\0Cube 4");
-			if (ImGui::Button("Focus Object")) cameraFocus(&camera, &cameraControls, deltaTime, cubeTransforms[itemIndex].position);
+			if (ImGui::Button("Focus Object (Kinda works)")) cameraFocus(&camera, &cameraControls, deltaTime, cubeTransforms[itemIndex].position);
 			ImGui::DragFloat3("Position", &cubeTransforms[itemIndex].position.x, 0.05f);
 			ImGui::DragFloat3("Rotation", &cubeTransforms[itemIndex].rotation.x, 1.0f);
 			ImGui::DragFloat3("Scale", &cubeTransforms[itemIndex].scale.x, 0.05f);
