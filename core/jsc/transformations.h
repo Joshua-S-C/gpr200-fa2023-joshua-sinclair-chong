@@ -130,5 +130,5 @@ namespace jsc {
 		ew::Mat4  getModelMatrix() const {
 			return jsc::Scale(scale) * RotateZ(rotation.z) * RotateX(rotation.x) * RotateY(rotation.y) * jsc::Translate(position);
 		}
-	};
+	};	
 }

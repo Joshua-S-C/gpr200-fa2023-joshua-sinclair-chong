@@ -15,6 +15,10 @@
 #include <ew/camera.h>
 #include <ew/cameraController.h>
 
+#include <jsc/transformations.h>
+#include <jsc/texture.h>
+#include <jsc/camera.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 
@@ -41,6 +45,7 @@ ew::Camera camera;
 ew::CameraController cameraController;
 
 int main() {
+// Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -75,18 +80,24 @@ int main() {
 	glPointSize(3.0f);
 	glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
 
+// Shader , Camera & Cubes ----------------------------------------------*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
-	//Create cube
+	// Create Plane
+	ew::MeshData planeMeshData = ew::createPlane(10, 5);
+	ew::Mesh planeMesh(planeMeshData);
+
+	// Create Cube
 	ew::MeshData cubeMeshData = ew::createCube(0.5f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
-	//Initialize transforms
+	// Initialize transforms
 	ew::Transform cubeTransform;
 
 	resetCamera(camera,cameraController);
 
+// Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
@@ -104,7 +115,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		
-
+// Uniforms & Draw ------------------------------------------------------*/
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
@@ -121,7 +132,7 @@ int main() {
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
-		//Render UI
+// Render UI ------------------------------------------------------------*/
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
