@@ -245,7 +245,7 @@ namespace ew {
 
 		// Side Indices
 		unsigned int sideStart = 2;	// Index of first top ring vert
-		int cols = segments + 1;
+		int cols = segments*2 + 2;	// Difference top and bottom verts. Offset of 2 to account for centre verts
 
 		for (int i = 0; i < cols; i++) {
 			start = sideStart + i;
