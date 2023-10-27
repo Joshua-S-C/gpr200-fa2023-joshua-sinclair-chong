@@ -82,19 +82,25 @@ int main() {
 
 // Shader , Camera & Cubes ----------------------------------------------*/
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
+	ew::Shader shader2("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	// Create Cube
-	ew::MeshData cubeMeshData = ew::createCube(0.0f);
+	ew::MeshData cubeMeshData = ew::createCube(1.0f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
 	ew::MeshData planeMeshData = ew::createPlane(10, 5);
 	ew::Mesh planeMesh(planeMeshData);
 
+	// Create Cylinder
+	ew::MeshData cylinderMD = ew::createCylinder(3, 5, 4);
+	ew::Mesh cylinderMesh(cylinderMD);
+
 	// Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
+	ew::Transform cylinderTransform;
 
 	resetCamera(camera,cameraController);
 
@@ -124,18 +130,22 @@ int main() {
 		shader.setVec3("_Color", appSettings.shapeColor);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 
-		//Euler angels to forward vector
+		// Euler angels to forward vector
 		ew::Vec3 lightRot = appSettings.lightRotation * ew::DEG2RAD;
 		ew::Vec3 lightF = ew::Vec3(sinf(lightRot.y) * cosf(lightRot.x), sinf(lightRot.x), -cosf(lightRot.y) * cosf(lightRot.x));
 		shader.setVec3("_LightDir", lightF);
 
-		//Draw cube
-		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		//cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		// Draw cube
+		shader.setMat4("_Model", cubeTransform.getModelMatrix());
+		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
-		//Draw plane
+		// Draw plane
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		// Draw Cylinder
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 // Render UI ------------------------------------------------------------*/
 		{
