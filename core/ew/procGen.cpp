@@ -117,7 +117,7 @@ namespace ew {
 		printf("Created plane\n");
 		return mesh;
 	}
-
+	
 	/// <summary>
 	/// Creates a cylinder
 	/// </summary>
@@ -157,7 +157,7 @@ namespace ew {
 			// First ring pointing up
 			ew::Vec3 norm = { 0,1,0 };
 
-			ew::Vec2 uv;
+			ew::Vec2 uv;	// UV's need to be remapped to a 0-1 range. Currently its -1 to 1
 			uv.x = sin(step * i);
 			uv.y = cos(step * i);
 
@@ -269,6 +269,41 @@ namespace ew {
 			mesh.indices.push_back(start + i + 1);
 		}
 
+		printf("Created cylinder\n");
+
 		return mesh;
 	}
+
+	/// <summary>
+	/// Creates a sphere
+	/// </summary>
+	/// <param name="radius">Distance of outter verts from center</param>
+	/// <param name="segments">Number of verts per ring</param>
+	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
+	MeshData createSphere(float radius, int segments) {
+		MeshData mesh;
+
+		// 
+		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
+		mesh.indices.reserve(segments * 3 + 1);		// 
+
+		// Top Centre Vert
+		ew::Vertex topVert;
+		topVert.pos = { 0, radius, 0 };
+		mesh.vertices.push_back(topVert);
+
+		// Bottom Centre Vert
+		ew::Vertex botVert;
+		botVert.pos = { 0, -radius, 0 };
+		mesh.vertices.push_back(botVert);
+
+// Vertices -------------------------------------------------------------*/
+		
+
+// Indices --------------------------------------------------------------*/
+		
+
+		return mesh;
+	}
+
 }

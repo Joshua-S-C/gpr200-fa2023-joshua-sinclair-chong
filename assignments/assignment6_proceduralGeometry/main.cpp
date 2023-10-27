@@ -85,22 +85,26 @@ int main() {
 	ew::Shader shader2("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
+	// Changing at runtime
+	int subdivs[3] = { 5, 8, 8 };
+
 	// Create Cube
 	ew::MeshData cubeMeshData = ew::createCube(0.0f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
-	ew::MeshData planeMeshData = ew::createPlane(10, 0);
+	ew::MeshData planeMeshData = ew::createPlane(10, subdivs[0]);
 	ew::Mesh planeMesh(planeMeshData);
 
 	// Create Cylinder
-	ew::MeshData cylinderMD = ew::createCylinder(1, 2, 8);
+	ew::MeshData cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
 	ew::Mesh cylinderMesh(cylinderMD);
 
 	// Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform cylinderTransform;
+
 
 	resetCamera(camera,cameraController);
 
@@ -189,8 +193,25 @@ int main() {
 				else
 					glDisable(GL_CULL_FACE);
 			}
+
+			// Prolly put this all in a menu where you select an object like before
+			//if (ImGui::CollapsingHeader("Change Sizes"))
+
+			if (ImGui::CollapsingHeader("Change Subdivisions")) {
+				ImGui::SliderInt("Plane", &subdivs[0], 3, 100);
+
+				planeMeshData = ew::createPlane(10, subdivs[0]);
+				planeMesh = planeMeshData;
+
+				ImGui::SliderInt("Cylinder", &subdivs[1], 3, 100);
+
+				cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
+				cylinderMesh = cylinderMD;
+
+				ImGui::SliderInt("Sphere", &subdivs[2], 3, 100);
+			}
+
 			ImGui::End();
-			
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		}
