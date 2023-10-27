@@ -133,16 +133,22 @@ namespace ew {
 		float step = 2 * PI / segments;	// Angle per increment
 
 		// This seems like it's probablt right
-		mesh.vertices.reserve(segments * 4);	// vertices
-		mesh.indices.reserve(segments * 2);		// indices
+		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
+		mesh.indices.reserve(segments * 3 + 1);		// 
 
-// Top Vertices ---------------------------------------------------------*/
 		// Top Centre Vert
-		ew::Vertex topVert = { 0, topY, 0 };
+		ew::Vertex topVert;
+		topVert.pos = { 0, topY, 0 };
 		mesh.vertices.push_back(topVert);
 
+		// Bottom Centre Vert
+		ew::Vertex botVert;
+		botVert.pos = { 0, botY, 0 };
+		mesh.vertices.push_back(botVert);
+
+// Top Vertices ---------------------------------------------------------*/
 		// Top Ring Pointing Up
-		for (int i = 0; i <= segments; i++) {
+		for (int i = 0; i <= segments; i++) {	// <= to dupe first vert
 			ew::Vec3 pos;
 			pos.y = topY;
 			pos.z = radius * sin(step * i);
@@ -152,6 +158,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,1,0 };
 
 			ew::Vec2 uv;
+			uv.x = sin(step * i);
+			uv.y = cos(step * i);
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -172,6 +180,8 @@ namespace ew {
 			ew::Vec3 norm = ew::Normalize(topVert.pos - pos);	
 
 			ew::Vec2 uv;
+			uv.x = i / segments;
+			uv.y = i / segments;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -181,10 +191,6 @@ namespace ew {
 		}
 
 // Bottom Vertices ------------------------------------------------------*/
-		// Bottom Centre Vert
-		ew::Vertex botVert = { 0, botY, 0 };
-		mesh.vertices.push_back(botVert);
-
 		// Bottom Ring Pointing Out
 		for (int i = 0; i <= segments; i++) {
 			ew::Vec3 pos;
@@ -195,6 +201,8 @@ namespace ew {
 			ew::Vec3 norm = Normalize(botVert.pos - pos);
 
 			ew::Vec2 uv;
+			uv.x = i / segments;
+			uv.y = i / segments;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -213,6 +221,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,-1,0 };
 
 			ew::Vec2 uv;
+			uv.x = sin(step * i);
+			uv.y = cos(step * i);
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -223,10 +233,14 @@ namespace ew {
 
 // Indices --------------------------------------------------------------*/
 		// Top Indices
-		unsigned int start = 1;
-		unsigned int centre = 0;	// Index of top center
-
+		unsigned int centre = 0;	// Top Centre
+		unsigned int start = 2;	// Index of first ring vert
+		
+		// Cap Indices
 		for (int i = 0; i < segments; i++) {
+			mesh.indices.push_back(start + i);
+			mesh.indices.push_back(centre);
+			mesh.indices.push_back(start + i + 1);
 		}
 
 		// Side Indices
@@ -234,15 +248,26 @@ namespace ew {
 		int cols = segments + 1;
 
 		for (int i = 0; i < cols; i++) {
-
+			start = sideStart + i;
+			
+			mesh.indices.push_back(start);
+			mesh.indices.push_back(start + 1);
+			mesh.indices.push_back(start + cols);
+			
+			mesh.indices.push_back(start + 1);
+			mesh.indices.push_back(start + 1 + cols);
+			mesh.indices.push_back(start + cols);
 		}
 
-		// Bottom Center
-
-
-
-		// Indices
+		// Bottom Indices
+		centre = 1;	// Bottom Centre
+		start = segments * 2 + 4;	// Start of bottom vertices
 		
+		for (int i = 0; i < segments; i++) {
+			mesh.indices.push_back(start + i);
+			mesh.indices.push_back(centre);
+			mesh.indices.push_back(start + i + 1);
+		}
 
 		return mesh;
 	}

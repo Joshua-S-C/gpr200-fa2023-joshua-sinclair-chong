@@ -52,7 +52,7 @@ int main() {
 		return 1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Camera", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Procedural Geometry", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -86,15 +86,15 @@ int main() {
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	// Create Cube
-	ew::MeshData cubeMeshData = ew::createCube(1.0f);
+	ew::MeshData cubeMeshData = ew::createCube(0.0f);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
-	ew::MeshData planeMeshData = ew::createPlane(10, 5);
+	ew::MeshData planeMeshData = ew::createPlane(10, 0);
 	ew::Mesh planeMesh(planeMeshData);
 
 	// Create Cylinder
-	ew::MeshData cylinderMD = ew::createCylinder(3, 5, 4);
+	ew::MeshData cylinderMD = ew::createCylinder(1, 2, 8);
 	ew::Mesh cylinderMesh(cylinderMD);
 
 	// Initialize transforms
