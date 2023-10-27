@@ -84,16 +84,17 @@ int main() {
 	ew::Shader shader("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
+	// Create Cube
+	ew::MeshData cubeMeshData = ew::createCube(0.0f);
+	ew::Mesh cubeMesh(cubeMeshData);
+
 	// Create Plane
 	ew::MeshData planeMeshData = ew::createPlane(10, 5);
 	ew::Mesh planeMesh(planeMeshData);
 
-	// Create Cube
-	ew::MeshData cubeMeshData = ew::createCube(0.5f);
-	ew::Mesh cubeMesh(cubeMeshData);
-
 	// Initialize transforms
 	ew::Transform cubeTransform;
+	ew::Transform planeTransform;
 
 	resetCamera(camera,cameraController);
 
@@ -129,8 +130,12 @@ int main() {
 		shader.setVec3("_LightDir", lightF);
 
 		//Draw cube
-		shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
+		//cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		
+		//Draw plane
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 // Render UI ------------------------------------------------------------*/
 		{

@@ -62,6 +62,7 @@ namespace ew {
 	/// Creates a plane of size
 	/// </summary>
 	/// <param name="size">Total width, and depth</param>
+	/// <param name="subdivs">Number of individual planes</param>
 	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createPlane(float size, int subdivs) {
 		MeshData mesh;
@@ -70,18 +71,19 @@ namespace ew {
 		mesh.indices.reserve((subdivs+1) * (subdivs+1));	// indices
 		
 		// Vertices
-		for (int rowNum = 0; rowNum <= subdivs; rowNum++) {
-			for (int colNum = 0; colNum <= subdivs; colNum++) {
+		for (float rowNum = 0; rowNum <= subdivs; rowNum++) {
+			for (float colNum = 0; colNum <= subdivs; colNum++) {
+
 				ew::Vec3 pos;
 				pos.x = size * (colNum / subdivs);
-				pos.z = size * (rowNum / subdivs);
+				pos.z = -size * (rowNum / subdivs);
 				pos.y = 0;
 
 				ew::Vec3 norm = { 0,1,0 };
 
 				ew::Vec2 uv;
-				uv.x = size * (colNum / subdivs);
-				uv.y = size * (rowNum / subdivs);
+				uv.x = colNum / subdivs;
+				uv.y = rowNum / subdivs;
 
 				ew::Vertex vert;
 				vert.pos = pos;
@@ -91,9 +93,11 @@ namespace ew {
 			}
 		}
 
+		printf("Plane vertices\n");
+
 		// Indices
-		for (int rowNum = 0; rowNum < subdivs; rowNum++) {
-			for (int colNum = 0; colNum < subdivs; colNum++) {
+		for (float rowNum = 0; rowNum < subdivs; rowNum++) {
+			for (float colNum = 0; colNum < subdivs; colNum++) {
 				unsigned int start = rowNum * cols + colNum;
 
 				// Bottom Right Triangle
@@ -108,11 +112,14 @@ namespace ew {
 			}
 		}
 
+		printf("Plane indices\n");
+
+
 		return mesh;
 	}
 
 	/// <summary>
-	/// Creates a plane of size
+	/// Creates a cylinder
 	/// </summary>
 	/// <param name="radius">Distance of outter verts from center</param>
 	/// <param name="height">Distance from bototm to top rings</param>
@@ -125,8 +132,8 @@ namespace ew {
 		float botY = -topY;			// Height of bottom plane
 		float step = 2 * PI / segments;	// Angle per increment
 
-		mesh.vertices.reserve();	// vertices
-		mesh.indices.reserve();		// indices
+		//mesh.vertices.reserve();	// vertices
+		//mesh.indices.reserve();		// indices
 
 		// Top Centre Vert
 		ew::Vertex topVert = { 0, topY, 0 };
