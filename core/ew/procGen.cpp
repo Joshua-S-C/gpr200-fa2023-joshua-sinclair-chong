@@ -261,7 +261,7 @@ namespace ew {
 
 		// Bottom Indices
 		centre = 1;	// Bottom Centre
-		start = segments * 2 + 4;	// Start of bottom vertices
+		start = segments * 2 + 5;	// Start of bottom vertices
 		
 		for (int i = 0; i < segments; i++) {
 			mesh.indices.push_back(start + i);
