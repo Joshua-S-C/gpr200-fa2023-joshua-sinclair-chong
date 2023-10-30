@@ -139,11 +139,13 @@ namespace ew {
 		// Top Centre Vert
 		ew::Vertex topVert;
 		topVert.pos = { 0, topY, 0 };
+		topVert.normal = { 0, 1, 0 };
 		mesh.vertices.push_back(topVert);
 
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, botY, 0 };
+		botVert.normal = { 0, -1, 0 };
 		mesh.vertices.push_back(botVert);
 
 // Top Vertices ---------------------------------------------------------*/
@@ -233,7 +235,7 @@ namespace ew {
 
 // Indices --------------------------------------------------------------*/
 		// Top Indices
-		unsigned int centre = 0;	// Top Centre
+		unsigned int centre = 0;// Top Centre
 		unsigned int start = 2;	// Index of first ring vert
 		
 		// Cap Indices
