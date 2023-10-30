@@ -93,7 +93,7 @@ int main() {
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
-	ew::MeshData planeMeshData = ew::createPlane(10, subdivs[0]);
+	ew::MeshData planeMeshData = ew::createPlane(0, subdivs[0]);
 	ew::Mesh planeMesh(planeMeshData);
 
 	// Create Cylinder
@@ -140,12 +140,12 @@ int main() {
 		shader.setVec3("_LightDir", lightF);
 
 		// Draw cube
-		shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
+		//cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
 		// Draw plane
-		shader.setMat4("_Model", planeTransform.getModelMatrix());
-		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", planeTransform.getModelMatrix());
+		//planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw Cylinder
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());

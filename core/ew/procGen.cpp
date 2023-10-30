@@ -133,8 +133,8 @@ namespace ew {
 		float step = 2 * PI / segments;	// Angle per increment
 
 		// This seems like it's probablt right
-		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
-		mesh.indices.reserve(segments * 3 + 1);		// 
+		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings + 2 dupes + 2 centres?
+		mesh.indices.reserve(segments * 3);		// 
 
 		// Top Centre Vert
 		ew::Vertex topVert;
@@ -246,8 +246,9 @@ namespace ew {
 		}
 
 		// Side Indices
-		unsigned int sideStart = 2;	// Index of first top ring vert
-		int cols = segments*2 + 2;	// Difference top and bottom verts. Offset of 2 to account for centre verts
+		unsigned int sideStart = segments + start;	// Index of first top ring (outward) vert
+		unsigned int cols = segments + 2;	// Difference top and bottom verts. Offset of 2 to account for centre verts
+		// They're the same cuz I added both centre verts before all others
 
 		for (int i = 0; i < cols; i++) {
 			start = sideStart + i;
@@ -261,10 +262,10 @@ namespace ew {
 			mesh.indices.push_back(start + cols);
 		}
 
-		// Bottom Indices
+		// Bottom Cap Indices
 		centre = 1;	// Bottom Centre
-		start = segments * 2 + 4;	// Start of bottom vertices
-		
+		start = segments * 3 + 5;	// Start of bottom (down) vertices. 3 rings + 3 dupes + 2 centre verts
+	
 		for (int i = 0; i < segments; i++) {
 			mesh.indices.push_back(start + i);
 			mesh.indices.push_back(centre);
