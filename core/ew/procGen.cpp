@@ -140,12 +140,14 @@ namespace ew {
 		ew::Vertex topVert;
 		topVert.pos = { 0, topY, 0 };
 		topVert.normal = { 0, 1, 0 };
+		topVert.uv = { 0.5, 0.5 };
 		mesh.vertices.push_back(topVert);
 
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, botY, 0 };
 		botVert.normal = { 0, -1, 0 };
+		botVert.uv = { 0.5, 0.5 };
 		mesh.vertices.push_back(botVert);
 
 // Top Vertices ---------------------------------------------------------*/
@@ -160,8 +162,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,1,0 };
 
 			ew::Vec2 uv;	// UV's need to be remapped to a 0-1 range. Currently its -1 to 1
-			uv.x = sin(step * i);
-			uv.y = cos(step * i);
+			uv.x = (sin(step * i) + 1) / 2;
+			uv.y = (cos(step * i) + 1) / 2;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -182,8 +184,9 @@ namespace ew {
 			ew::Vec3 norm = ew::Normalize(topVert.pos - pos);	
 
 			ew::Vec2 uv;
-			uv.x = i / segments;
-			uv.y = i / segments;
+			uv.x = i / (segments * step);
+			uv.y = 1;
+
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -203,8 +206,8 @@ namespace ew {
 			ew::Vec3 norm = Normalize(botVert.pos - pos);
 
 			ew::Vec2 uv;
-			uv.x = i / segments;
-			uv.y = i / segments;
+			uv.x = i / (segments * step);
+			uv.y = 0;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -223,8 +226,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,-1,0 };
 
 			ew::Vec2 uv;
-			uv.x = sin(step * i);
-			uv.y = cos(step * i);
+			uv.x = (sin(step * i) + 1) / 2;
+			uv.y = (cos(step * i) + 1) / 2;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -265,7 +268,7 @@ namespace ew {
 		// Bottom Cap Indices
 		centre = 1;	// Bottom Centre
 		start = segments * 3 + 5;	// Start of bottom (down) vertices. 3 rings + 3 dupes + 2 centre verts
-	
+
 		for (int i = 0; i < segments; i++) {
 			mesh.indices.push_back(start + i);
 			mesh.indices.push_back(centre);
