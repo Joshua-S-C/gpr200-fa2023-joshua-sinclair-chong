@@ -85,7 +85,7 @@ int main() {
 	ew::Shader shader2("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
-	// Changing at runtime
+	// Changing subdivisions at runtime
 	int subdivs[3] = { 5, 8, 8 };
 
 	// Create Cube
@@ -93,17 +93,23 @@ int main() {
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
-	ew::MeshData planeMeshData = ew::createPlane(0, subdivs[0]);
-	ew::Mesh planeMesh(planeMeshData);
+	ew::MeshData planeMD = ew::createPlane(0, subdivs[0]);
+	ew::Mesh planeMesh(planeMD);
 
 	// Create Cylinder
 	ew::MeshData cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
 	ew::Mesh cylinderMesh(cylinderMD);
+	
+	// Create Sphere
+	ew::MeshData sphereMD = ew::createSphere(1, subdivs[2]);
+	ew::Mesh sphereMesh(sphereMD);
+
 
 	// Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform cylinderTransform;
+	ew::Transform sphereTransform;
 
 
 	resetCamera(camera,cameraController);
@@ -147,9 +153,15 @@ int main() {
 		//shader.setMat4("_Model", planeTransform.getModelMatrix());
 		//planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
-		// Draw Cylinder
-		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		// Draw cylinder
+		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		//cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		// Draw polar sphere
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+
+		
 
 // Render UI ------------------------------------------------------------*/
 		{
@@ -200,8 +212,8 @@ int main() {
 			if (ImGui::CollapsingHeader("Change Subdivisions")) {
 				ImGui::SliderInt("Plane", &subdivs[0], 3, 100);
 
-				planeMeshData = ew::createPlane(10, subdivs[0]);
-				planeMesh = planeMeshData;
+				planeMD = ew::createPlane(10, subdivs[0]);
+				planeMesh = planeMD;
 
 				ImGui::SliderInt("Cylinder", &subdivs[1], 3, 100);
 
@@ -209,6 +221,9 @@ int main() {
 				cylinderMesh = cylinderMD;
 
 				ImGui::SliderInt("Sphere", &subdivs[2], 3, 100);
+
+				sphereMD = ew::createSphere(1, subdivs[2]);
+				sphereMesh = sphereMD;
 			}
 
 			ImGui::End();

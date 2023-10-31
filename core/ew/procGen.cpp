@@ -45,7 +45,6 @@ namespace ew {
 	/// Creates a cube of uniform size
 	/// </summary>
 	/// <param name="size">Total width, height, depth</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createCube(float size) {
 		MeshData mesh;
 		mesh.vertices.reserve(24); //6 x 4 vertices
@@ -124,7 +123,6 @@ namespace ew {
 	/// <param name="radius">Distance of outter verts from center</param>
 	/// <param name="height">Distance from bototm to top rings</param>
 	/// <param name="segments">Number of verts per ring</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createCylinder(float radius, float height, int segments) {
 		MeshData mesh;
 
@@ -132,7 +130,7 @@ namespace ew {
 		float botY = -topY;			// Height of bottom plane
 		float step = 2 * PI / segments;	// Angle per increment
 
-		// This seems like it's probablt right
+		// This seems like it's probably right
 		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings + 2 dupes + 2 centres?
 		mesh.indices.reserve(segments * 3);		// 
 
@@ -281,13 +279,14 @@ namespace ew {
 	}
 
 	/// <summary>
-	/// Creates a sphere
+	/// Creates a polar sphere
 	/// </summary>
-	/// <param name="radius">Distance of outter verts from center</param>
+	/// <param name="radius">Distance of verts from center</param>
 	/// <param name="segments">Number of verts per ring</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createSphere(float radius, int segments) {
 		MeshData mesh;
+
+		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
 		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
@@ -304,7 +303,22 @@ namespace ew {
 		mesh.vertices.push_back(botVert);
 
 // Vertices -------------------------------------------------------------*/
-		
+		for (float row = 0; row < segments; row++) {
+			float phi = row * step.y;
+			for (float col = 0; col < segments; col++) {
+				float theta = col * step.x;
+				
+				ew::Vec3 pos;
+				pos.x = radius * sin(phi) * sin(theta);
+				pos.y = radius * cos(phi);
+				pos.z = radius * sin(phi) * cos(theta);
+
+
+				ew::Vertex vert;
+				vert.pos = pos;
+				mesh.vertices.push_back(vert);
+			}
+		}
 
 // Indices --------------------------------------------------------------*/
 		
