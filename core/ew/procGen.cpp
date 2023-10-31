@@ -45,7 +45,6 @@ namespace ew {
 	/// Creates a cube of uniform size
 	/// </summary>
 	/// <param name="size">Total width, height, depth</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createCube(float size) {
 		MeshData mesh;
 		mesh.vertices.reserve(24); //6 x 4 vertices
@@ -124,7 +123,6 @@ namespace ew {
 	/// <param name="radius">Distance of outter verts from center</param>
 	/// <param name="height">Distance from bototm to top rings</param>
 	/// <param name="segments">Number of verts per ring</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createCylinder(float radius, float height, int segments) {
 		MeshData mesh;
 
@@ -132,18 +130,22 @@ namespace ew {
 		float botY = -topY;			// Height of bottom plane
 		float step = 2 * PI / segments;	// Angle per increment
 
-		// This seems like it's probablt right
-		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
-		mesh.indices.reserve(segments * 3 + 1);		// 
+		// This seems like it's probably right
+		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings + 2 dupes + 2 centres?
+		mesh.indices.reserve(segments * 3);		// 
 
 		// Top Centre Vert
 		ew::Vertex topVert;
 		topVert.pos = { 0, topY, 0 };
+		topVert.normal = { 0, 1, 0 };
+		topVert.uv = { 0.5, 0.5 };
 		mesh.vertices.push_back(topVert);
 
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, botY, 0 };
+		botVert.normal = { 0, -1, 0 };
+		botVert.uv = { 0.5, 0.5 };
 		mesh.vertices.push_back(botVert);
 
 // Top Vertices ---------------------------------------------------------*/
@@ -158,8 +160,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,1,0 };
 
 			ew::Vec2 uv;	// UV's need to be remapped to a 0-1 range. Currently its -1 to 1
-			uv.x = sin(step * i);
-			uv.y = cos(step * i);
+			uv.x = (sin(step * i) + 1) / 2;
+			uv.y = (cos(step * i) + 1) / 2;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -180,8 +182,9 @@ namespace ew {
 			ew::Vec3 norm = ew::Normalize(topVert.pos - pos);	
 
 			ew::Vec2 uv;
-			uv.x = i / segments;
-			uv.y = i / segments;
+			uv.x = i / (segments * step);
+			uv.y = 1;
+
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -201,8 +204,8 @@ namespace ew {
 			ew::Vec3 norm = Normalize(botVert.pos - pos);
 
 			ew::Vec2 uv;
-			uv.x = i / segments;
-			uv.y = i / segments;
+			uv.x = i / (segments * step);
+			uv.y = 0;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -221,8 +224,8 @@ namespace ew {
 			ew::Vec3 norm = { 0,-1,0 };
 
 			ew::Vec2 uv;
-			uv.x = sin(step * i);
-			uv.y = cos(step * i);
+			uv.x = (sin(step * i) + 1) / 2;
+			uv.y = (cos(step * i) + 1) / 2;
 
 			ew::Vertex vert;
 			vert.pos = pos;
@@ -233,7 +236,7 @@ namespace ew {
 
 // Indices --------------------------------------------------------------*/
 		// Top Indices
-		unsigned int centre = 0;	// Top Centre
+		unsigned int centre = 0;// Top Centre
 		unsigned int start = 2;	// Index of first ring vert
 		
 		// Cap Indices
@@ -244,8 +247,9 @@ namespace ew {
 		}
 
 		// Side Indices
-		unsigned int sideStart = 2;	// Index of first top ring vert
-		int cols = segments*2 + 2;	// Difference top and bottom verts. Offset of 2 to account for centre verts
+		unsigned int sideStart = segments + start;	// Index of first top ring (outward) vert
+		unsigned int cols = segments + 2;	// Difference top and bottom verts. Offset of 2 to account for centre verts
+		// They're the same cuz I added both centre verts before all others
 
 		for (int i = 0; i < cols; i++) {
 			start = sideStart + i;
@@ -259,10 +263,10 @@ namespace ew {
 			mesh.indices.push_back(start + cols);
 		}
 
-		// Bottom Indices
+		// Bottom Cap Indices
 		centre = 1;	// Bottom Centre
-		start = segments * 2 + 5;	// Start of bottom vertices
-		
+		start = segments * 3 + 5;	// Start of bottom (down) vertices. 3 rings + 3 dupes + 2 centre verts
+
 		for (int i = 0; i < segments; i++) {
 			mesh.indices.push_back(start + i);
 			mesh.indices.push_back(centre);
@@ -275,13 +279,14 @@ namespace ew {
 	}
 
 	/// <summary>
-	/// Creates a sphere
+	/// Creates a polar sphere
 	/// </summary>
-	/// <param name="radius">Distance of outter verts from center</param>
+	/// <param name="radius">Distance of verts from center</param>
 	/// <param name="segments">Number of verts per ring</param>
-	/// <param name="mesh">MeshData struct to fill. Will be cleared.</param>
 	MeshData createSphere(float radius, int segments) {
 		MeshData mesh;
+
+		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
 		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
@@ -295,13 +300,72 @@ namespace ew {
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, -radius, 0 };
-		mesh.vertices.push_back(botVert);
 
 // Vertices -------------------------------------------------------------*/
+		/*for (int i = 0; i < segments; i++) {
+			ew::Vertex vert;
+			vert.pos = topVert.pos;
+			mesh.vertices.push_back(vert);
+		}*/
 		
+		for (float row = 0; row <= segments; row++) {
+			float phi = row * step.y;
+			for (float col = 0; col < segments; col++) {
+				float theta = col * step.x;
+				
+				ew::Vec3 pos;
+				pos.x = radius * sin(phi) * sin(theta);
+				pos.y = radius * cos(phi);
+				pos.z = radius * sin(phi) * cos(theta);
+
+
+				ew::Vertex vert;
+				vert.pos = pos;
+				mesh.vertices.push_back(vert);
+			}
+		}
+
+		mesh.vertices.push_back(botVert);
+
 
 // Indices --------------------------------------------------------------*/
-		
+		// Top Cap
+		int poleStart = 0;	// First pole vertex
+		int sideStart = segments;	// First side index
+
+		for (int i = 0; i <= segments; i++) {
+			mesh.indices.push_back(sideStart + i);
+			mesh.indices.push_back(poleStart);
+			mesh.indices.push_back(sideStart + i + 1);
+		}
+
+		// Rows
+		/*int cols = segments;
+		for (int row = 1; row < segments; row++) {
+			for (int col = 0; col < segments; col++) {
+				int start = row * cols + col;
+
+				mesh.indices.push_back(start);
+				mesh.indices.push_back(start + 1);
+				mesh.indices.push_back(start + cols);
+
+				mesh.indices.push_back(start + 1);
+				mesh.indices.push_back(start + cols + 1);
+				mesh.indices.push_back(start + cols);
+			}
+		}*/
+
+		// Bottom Cap
+		//poleStart = 0;	// Bottom pole starting vertex
+		//sideStart = segments + 1;	// Last side index
+
+		//for (size_t i = 0; i < segments; i++) {
+		//	mesh.indices.push_back(sideStart + i);
+		//	mesh.indices.push_back(poleStart + i);
+		//	mesh.indices.push_back(sideStart + poleStart + i);
+		//}
+
+		printf("Created sphere");
 
 		return mesh;
 	}
