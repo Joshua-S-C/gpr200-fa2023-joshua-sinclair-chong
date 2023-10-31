@@ -315,9 +315,16 @@ namespace ew {
 				pos.y = radius * cos(phi);
 				pos.z = radius * sin(theta) * sin(phi);
 
+				ew::Vec3 norm = Normalize(pos);
+
+				ew::Vec2 uv;
+				uv.x = col / segments;
+				uv.y = row / segments;
 
 				ew::Vertex vert;
 				vert.pos = pos;
+				vert.normal = norm;
+				vert.uv = uv;
 				mesh.vertices.push_back(vert);
 			}
 		}

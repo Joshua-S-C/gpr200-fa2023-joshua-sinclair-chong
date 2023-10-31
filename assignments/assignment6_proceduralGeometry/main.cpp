@@ -154,12 +154,12 @@ int main() {
 		//planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw cylinder
-		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		//cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw polar sphere
-		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		//sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		
 
