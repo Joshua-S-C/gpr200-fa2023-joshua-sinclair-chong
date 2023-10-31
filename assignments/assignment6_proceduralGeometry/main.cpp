@@ -168,8 +168,10 @@ int main() {
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
-
-			ImGui::Begin("Settings");
+			ImGui::SetNextWindowPos({ 0,0 });
+			ImGui::SetNextWindowSize({ 300, 720 });
+			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+			
 			if (ImGui::CollapsingHeader("Camera")) {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.1f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.1f);
@@ -211,20 +213,23 @@ int main() {
 
 			if (ImGui::CollapsingHeader("Change Subdivisions")) {
 				// If slider is true, then the value changed
-				ImGui::SliderInt("Plane", &subdivs[0], 3, 100);
+				if (ImGui::SliderInt("Plane", &subdivs[0], 3, 100)) {
+					planeMD = ew::createPlane(10, subdivs[0]);
+					planeMesh = planeMD;
+				}
 
-				planeMD = ew::createPlane(10, subdivs[0]);
-				planeMesh = planeMD;
 
-				ImGui::SliderInt("Cylinder", &subdivs[1], 3, 100);
+				if (ImGui::SliderInt("Cylinder", &subdivs[1], 3, 100)) {
+					cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
+					cylinderMesh = cylinderMD;
+				}
 
-				cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
-				cylinderMesh = cylinderMD;
+				if (ImGui::SliderInt("Sphere", &subdivs[2], 3, 100)) {
+					sphereMD = ew::createSphere(1, subdivs[2]);
+					sphereMesh = sphereMD;
+				}
 
-				ImGui::SliderInt("Sphere", &subdivs[2], 3, 100);
 
-				sphereMD = ew::createSphere(1, subdivs[2]);
-				sphereMesh = sphereMD;
 			}
 
 			ImGui::End();

@@ -290,17 +290,23 @@ namespace ew {
 		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
-		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings with dupes of first verts?
+		mesh.vertices.reserve(segments * 5 + 4);	// 4 rings with dupes of first verts?
 		mesh.indices.reserve(segments * 3 + 1);		// 
 
-		// Top Centre Vert
+		// Top Centre Vert (creates dupes)
 		ew::Vertex topVert;
 		topVert.pos = { 0, radius, 0 };
-		mesh.vertices.push_back(topVert);
+		for (int i = 0; i < segments; i++)
+			mesh.vertices.push_back(topVert);
+
+		
 
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, -radius, 0 };
+		for (int i = 0; i < segments; i++)
+			mesh.vertices.push_back(botVert);
+
 
 // Vertices -------------------------------------------------------------*/
 		// Converge at poles
@@ -329,24 +335,23 @@ namespace ew {
 			}
 		}
 
-		mesh.vertices.push_back(botVert);
 
 
 // Indices --------------------------------------------------------------*/
 		// Top Cap
-		//int poleStart = 0;	// First pole vertex
-		//int sideStart = segments + 1;	// First side index
+		int poleStart = 0;	// First pole vertex
+		int sideStart = segments * 3 + 1;	// First side index
 
-		//for (int i = 0; i <= segments; i++) {
-		//	mesh.indices.push_back(sideStart + i);
-		//	mesh.indices.push_back(poleStart + i);
-		//	mesh.indices.push_back(sideStart + i + 1);
-		//}
+		for (int i = 0; i < segments; i++) {
+			mesh.indices.push_back(sideStart + i); // Side vert
+			mesh.indices.push_back(poleStart + i); // Pole dupes
+			mesh.indices.push_back(sideStart + i + 1); // Next side vert
+		}
 
-		// 
+		// Rows
+		// row = 0 & row < segments - 1 : to not draw caps 
 		int cols = segments + 1;
-		// row = 0 & row < segments - 1 : not draw caps 
-		for (int row = 0; row < segments; row++) {
+		for (int row = 1; row < segments - 1; row++) {
 			for (int col = 0; col <= segments; col++) {
 				int start = row * cols + col;
 
@@ -360,17 +365,17 @@ namespace ew {
 			}
 		}
 
-		// Bottom Cap // Not needed?
-		//poleStart = 0;	// Bottom pole starting vertex
-		//sideStart = segments + 1;	// Last side index
+		// Bottom Cap
+		//poleStart = segments * 4 + 4;	// Bottom pole starting vertex
+		//sideStart = segments * 2;	// Last side index
 
-		//for (size_t i = 0; i < segments; i++) {
+		//for (int i = 0; i < segments; i++) {
 		//	mesh.indices.push_back(sideStart + i);
 		//	mesh.indices.push_back(poleStart + i);
 		//	mesh.indices.push_back(sideStart + poleStart + i);
 		//}
 
-		printf("Created sphere");
+		printf("Created sphere\n");
 
 		return mesh;
 	}
