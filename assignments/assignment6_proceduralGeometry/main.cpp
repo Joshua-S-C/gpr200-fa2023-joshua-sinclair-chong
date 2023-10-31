@@ -86,7 +86,7 @@ int main() {
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	// Changing subdivisions at runtime
-	int subdivs[3] = { 5, 8, 8 };
+	int subdivs[3] = { 5, 3, 8 };
 
 	// Create Cube
 	ew::MeshData cubeMeshData = ew::createCube(0.0f);
@@ -154,12 +154,12 @@ int main() {
 		//planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw cylinder
-		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		//cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw polar sphere
-		shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		//sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		
 
@@ -210,6 +210,7 @@ int main() {
 			//if (ImGui::CollapsingHeader("Change Sizes"))
 
 			if (ImGui::CollapsingHeader("Change Subdivisions")) {
+				// If slider is true, then the value changed
 				ImGui::SliderInt("Plane", &subdivs[0], 3, 100);
 
 				planeMD = ew::createPlane(10, subdivs[0]);

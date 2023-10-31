@@ -182,7 +182,7 @@ namespace ew {
 			ew::Vec3 norm = ew::Normalize(topVert.pos - pos);	
 
 			ew::Vec2 uv;
-			uv.x = i / (segments * step);
+			uv.x = (float)i / (float)segments;
 			uv.y = 1;
 
 
@@ -204,7 +204,7 @@ namespace ew {
 			ew::Vec3 norm = Normalize(botVert.pos - pos);
 
 			ew::Vec2 uv;
-			uv.x = i / (segments * step);
+			uv.x = (float)i / (float)segments; // x_x forgor it;s int division
 			uv.y = 0;
 
 			ew::Vertex vert;
@@ -286,6 +286,7 @@ namespace ew {
 	MeshData createSphere(float radius, int segments) {
 		MeshData mesh;
 
+		//				Theta					Phi
 		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
@@ -302,21 +303,17 @@ namespace ew {
 		botVert.pos = { 0, -radius, 0 };
 
 // Vertices -------------------------------------------------------------*/
-		/*for (int i = 0; i < segments; i++) {
-			ew::Vertex vert;
-			vert.pos = topVert.pos;
-			mesh.vertices.push_back(vert);
-		}*/
-		
+		// Converge at poles
 		for (float row = 0; row <= segments; row++) {
 			float phi = row * step.y;
-			for (float col = 0; col < segments; col++) {
+			// Dupe col for each row
+			for (float col = 0; col <= segments; col++) {
 				float theta = col * step.x;
 				
 				ew::Vec3 pos;
-				pos.x = radius * sin(phi) * sin(theta);
+				pos.x = radius * sin(phi) * cos(theta);
 				pos.y = radius * cos(phi);
-				pos.z = radius * sin(phi) * cos(theta);
+				pos.z = radius * sin(theta) * sin(phi);
 
 
 				ew::Vertex vert;
@@ -330,19 +327,20 @@ namespace ew {
 
 // Indices --------------------------------------------------------------*/
 		// Top Cap
-		int poleStart = 0;	// First pole vertex
-		int sideStart = segments;	// First side index
+		//int poleStart = 0;	// First pole vertex
+		//int sideStart = segments + 1;	// First side index
 
-		for (int i = 0; i <= segments; i++) {
-			mesh.indices.push_back(sideStart + i);
-			mesh.indices.push_back(poleStart);
-			mesh.indices.push_back(sideStart + i + 1);
-		}
+		//for (int i = 0; i <= segments; i++) {
+		//	mesh.indices.push_back(sideStart + i);
+		//	mesh.indices.push_back(poleStart + i);
+		//	mesh.indices.push_back(sideStart + i + 1);
+		//}
 
-		// Rows
-		/*int cols = segments;
-		for (int row = 1; row < segments; row++) {
-			for (int col = 0; col < segments; col++) {
+		// 
+		int cols = segments + 1;
+		// row = 0 & row < segments - 1 : not draw caps 
+		for (int row = 0; row < segments; row++) {
+			for (int col = 0; col <= segments; col++) {
 				int start = row * cols + col;
 
 				mesh.indices.push_back(start);
@@ -353,9 +351,9 @@ namespace ew {
 				mesh.indices.push_back(start + cols + 1);
 				mesh.indices.push_back(start + cols);
 			}
-		}*/
+		}
 
-		// Bottom Cap
+		// Bottom Cap // Not needed?
 		//poleStart = 0;	// Bottom pole starting vertex
 		//sideStart = segments + 1;	// Last side index
 
