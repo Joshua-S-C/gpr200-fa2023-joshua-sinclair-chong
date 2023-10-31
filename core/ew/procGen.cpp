@@ -300,10 +300,15 @@ namespace ew {
 		// Bottom Centre Vert
 		ew::Vertex botVert;
 		botVert.pos = { 0, -radius, 0 };
-		mesh.vertices.push_back(botVert);
 
 // Vertices -------------------------------------------------------------*/
-		for (float row = 0; row < segments; row++) {
+		/*for (int i = 0; i < segments; i++) {
+			ew::Vertex vert;
+			vert.pos = topVert.pos;
+			mesh.vertices.push_back(vert);
+		}*/
+		
+		for (float row = 0; row <= segments; row++) {
 			float phi = row * step.y;
 			for (float col = 0; col < segments; col++) {
 				float theta = col * step.x;
@@ -320,8 +325,47 @@ namespace ew {
 			}
 		}
 
+		mesh.vertices.push_back(botVert);
+
+
 // Indices --------------------------------------------------------------*/
-		
+		// Top Cap
+		int poleStart = 0;	// First pole vertex
+		int sideStart = segments;	// First side index
+
+		for (int i = 0; i <= segments; i++) {
+			mesh.indices.push_back(sideStart + i);
+			mesh.indices.push_back(poleStart);
+			mesh.indices.push_back(sideStart + i + 1);
+		}
+
+		// Rows
+		/*int cols = segments;
+		for (int row = 1; row < segments; row++) {
+			for (int col = 0; col < segments; col++) {
+				int start = row * cols + col;
+
+				mesh.indices.push_back(start);
+				mesh.indices.push_back(start + 1);
+				mesh.indices.push_back(start + cols);
+
+				mesh.indices.push_back(start + 1);
+				mesh.indices.push_back(start + cols + 1);
+				mesh.indices.push_back(start + cols);
+			}
+		}*/
+
+		// Bottom Cap
+		//poleStart = 0;	// Bottom pole starting vertex
+		//sideStart = segments + 1;	// Last side index
+
+		//for (size_t i = 0; i < segments; i++) {
+		//	mesh.indices.push_back(sideStart + i);
+		//	mesh.indices.push_back(poleStart + i);
+		//	mesh.indices.push_back(sideStart + poleStart + i);
+		//}
+
+		printf("Created sphere");
 
 		return mesh;
 	}
