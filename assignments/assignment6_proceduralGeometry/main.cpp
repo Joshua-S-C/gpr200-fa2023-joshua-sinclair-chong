@@ -34,7 +34,7 @@ struct AppSettings {
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);
 	bool wireframe = true;
-	bool drawAsPoints = false;
+	bool drawAsPoints = true;
 	bool backFaceCulling = true;
 
 	//Euler angles (degrees)
@@ -87,6 +87,10 @@ int main() {
 
 	// Changing subdivisions at runtime
 	int subdivs[3] = { 5, 3, 8 };
+	int torusSubdivs[2] = { 3, 30 };
+
+	// Changing sizes at runtime
+	// uh do this rq
 
 	// Create Cube
 	ew::MeshData cubeMeshData = ew::createCube(0.0f);
@@ -104,12 +108,17 @@ int main() {
 	ew::MeshData sphereMD = ew::createSphere(1, subdivs[2]);
 	ew::Mesh sphereMesh(sphereMD);
 
+	// Create Torus
+	ew::MeshData torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
+	ew::Mesh torusMesh(torusMD);
+
 
 	// Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform cylinderTransform;
 	ew::Transform sphereTransform;
+	ew::Transform torusTransform;
 
 
 	resetCamera(camera,cameraController);
@@ -158,8 +167,12 @@ int main() {
 		//cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw polar sphere
-		shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		//sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		
+		// Draw torus
+		shader.setMat4("_Model", torusTransform.getModelMatrix());
+		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		
 
@@ -208,7 +221,7 @@ int main() {
 					glDisable(GL_CULL_FACE);
 			}
 
-			// Prolly put this all in a menu where you select an object like before
+			// Prolly put this all in a menu where you select an object like before, along with size
 			//if (ImGui::CollapsingHeader("Change Sizes"))
 
 			if (ImGui::CollapsingHeader("Change Subdivisions")) {
@@ -228,6 +241,17 @@ int main() {
 					sphereMD = ew::createSphere(1, subdivs[2]);
 					sphereMesh = sphereMD;
 				}
+
+				if (ImGui::SliderInt("Torus Ring", &torusSubdivs[0], 3, 100)) {
+					torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
+					torusMesh = torusMD;
+				}
+
+				if (ImGui::SliderInt("Torus Inner", &torusSubdivs[1], 3, 100)) {
+					torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
+					torusMesh = torusMD;
+				}
+
 
 
 			}

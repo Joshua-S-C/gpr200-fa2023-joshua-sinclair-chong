@@ -379,5 +379,74 @@ namespace ew {
 
 		return mesh;
 	}
+	
+	/// <summary>
+	/// Creates a torus
+	/// </summary>
+	/// <param name="radius">Radius of inside</param>
+	/// <param name="tubeRadius">Radius of tube</param>
+	/// <param name="segments">Number rings drawn</param>
+	/// <param name="ringSegments">Subdivs of circles</param>
+	MeshData createTorus(float radius, float ringRadius, int segments, int ringSegments) {
+		MeshData mesh;
+
+		float ringStep = TAU / ringSegments;
+		float torusStep = TAU / segments;
+
+		// 
+		mesh.vertices.reserve(segments * 5 + 4);	//
+		mesh.indices.reserve(segments * 3 + 1);		// 
+
+		
+// Vertices -------------------------------------------------------------*/
+		// Creating tube
+		for (int i = 0; i < segments; i++)
+		{
+			float torusTheta = i * torusStep;
+			// Used to offset ring verts
+			//ew::Vec3 posOffset;
+			//posOffset.x = radius * cos(i * torusStep);
+			//posOffset.z = radius * sin(i * torusStep);
+			//posOffset.y = 0;
+
+			//// Horizontal ring // Comment out later
+			//ew::Vertex vert;
+			//vert.pos = posOffset;
+			//mesh.vertices.push_back(vert);
+
+
+			// Create the circle
+			for (float j = 0; j < ringSegments; j++) {
+				// Initial Positions
+				ew::Vec3 pos;
+				//pos.x = radius * cos(i * ringStep);
+				//pos.y = radius * sin(i * ringStep);
+
+				float ringTheta = j * ringStep;
+				pos.x = cos(torusTheta) * (radius + cos(ringTheta) * ringRadius);
+				pos.y = sin(torusTheta) * (radius + cos(ringTheta) * ringRadius);
+				pos.z = sin(ringTheta) * ringRadius;
+
+				// Position offset
+				//posOffset.x *= cos(i * ringStep);
+				//posOffset.y *= sin(i * ringStep);
+				//pos += posOffset;
+
+
+
+				ew::Vertex vert;
+				vert.pos = pos;
+				mesh.vertices.push_back(vert);
+			}
+		}
+
+
+// Indices --------------------------------------------------------------*/
+		
+
+		printf("Created torus\n");
+
+		return mesh;
+	}
 
 }
