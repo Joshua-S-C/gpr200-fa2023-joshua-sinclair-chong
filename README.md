@@ -10,4 +10,4 @@
 (I didn't do anything interesting for this one I was tired 😔)
 
 5 : Cameras
-. Sprint with Shift, there's also a fucs button that mostly works
+Sprint with Shift, there's also a focus button that works (I didn't pass in deltaTime for movement tho 😭)
