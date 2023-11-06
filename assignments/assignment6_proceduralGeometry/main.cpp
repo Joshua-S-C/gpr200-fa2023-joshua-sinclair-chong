@@ -193,7 +193,7 @@ int main() {
 			ImGui::NewFrame();
 			ImGui::SetNextWindowPos({ 0,0 });
 			ImGui::SetNextWindowSize({ 300, 720 });
-			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 			
 			if (ImGui::CollapsingHeader("Camera")) {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.1f);
@@ -235,6 +235,7 @@ int main() {
 
 			// Prolly put this all in a menu where you select an object like before, along with size
 			// If slider is true, then the value changed
+			// Sliders Need to be in separate statements otherwise changing one will refresh those below it
 
 			// Cube
 			if (ImGui::CollapsingHeader("Cube")) {
@@ -246,8 +247,12 @@ int main() {
 
 			// Plane
 			if (ImGui::CollapsingHeader("Plane")) {
-				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100) ||
-					ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
+				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100)) {
+					planeMD = ew::createPlane(planeSize, planeSubdivs);
+					planeMesh = planeMD;
+				}
+
+				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
 					planeMD = ew::createPlane(planeSize, planeSubdivs);
 					planeMesh = planeMD;
 				}
@@ -255,9 +260,15 @@ int main() {
 			
 			// Cylinder
 			if (ImGui::CollapsingHeader("Cylinder")) {
-				if (ImGui::SliderInt("Cyl Subdivs", &cylinderSubdivs, 3, 100) ||
-					ImGui::SliderFloat("Cyl Radius", &cylinderRadius, 1, 5) ||
-					ImGui::SliderFloat("Cyl Height", &cylinderHeight, 1, 5)) {
+				if (ImGui::SliderInt("Cyl Subdivs", &cylinderSubdivs, 3, 100)) {
+					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+					cylinderMesh = cylinderMD;
+				}
+				if (ImGui::SliderFloat("Cyl Radius", &cylinderRadius, 1, 5)) {
+					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+					cylinderMesh = cylinderMD;
+				}
+				if (ImGui::SliderFloat("Cyl Height", &cylinderHeight, 1, 5)) {
 					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 					cylinderMesh = cylinderMD;
 				}
@@ -265,8 +276,11 @@ int main() {
 
 			// Sphere
 			if (ImGui::CollapsingHeader("Sphere")) {
-				if (ImGui::SliderInt("Sph Subdivs", &sphereSubdivs, 3, 100) ||
-					ImGui::SliderFloat("Sph Radius", &sphereRadius, 1, 10)) {
+				if (ImGui::SliderInt("Sph Subdivs", &sphereSubdivs, 3, 100)) {
+					sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
+					sphereMesh = sphereMD;
+				}
+				if (ImGui::SliderFloat("Sph Radius", &sphereRadius, 1, 10)) {
 					sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
 					sphereMesh = sphereMD;
 				}
@@ -274,10 +288,19 @@ int main() {
 
 			// Torus
 			if (ImGui::CollapsingHeader("Torus")) {
-				if (ImGui::SliderInt("Torus Subdivs", &torusSubdivs[0], 3, 100) ||
-					ImGui::SliderInt("TOrus Ring Subdivs", &torusSubdivs[1], 3, 100) ||
-					ImGui::SliderFloat("Torus Radius", &torusSize[0], 0, 10) ||
-					ImGui::SliderFloat("Torus Ring Radius", &torusSize[1], 0, 10)) {
+				if (ImGui::SliderInt("Torus Subdivs", &torusSubdivs[0], 3, 100)) {
+					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMesh = torusMD;
+				}
+				if (ImGui::SliderInt("Torus Ring Subdivs", &torusSubdivs[1], 3, 100)) {
+					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMesh = torusMD;
+				}
+				if (ImGui::SliderFloat("Torus Radius", &torusSize[0], 0, 10)) {
+					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMesh = torusMD;
+				}
+				if (ImGui::SliderFloat("Torus Ring Radius", &torusSize[1], 0, 10)) {
 					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
