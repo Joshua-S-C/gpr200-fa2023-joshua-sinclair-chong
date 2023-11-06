@@ -1,5 +1,6 @@
 /*
 	Author: Eric Winebrenner
+	Edited: Joshua Sinclair Chong
 */
 
 
@@ -148,7 +149,7 @@ namespace ew {
 		botVert.uv = { 0.5, 0.5 };
 		mesh.vertices.push_back(botVert);
 
-// Top Vertices ---------------------------------------------------------*/
+	// Top Vertices ---------------------------------------------------------*/
 		// Top Ring Pointing Up
 		for (int i = 0; i <= segments; i++) {	// <= to dupe first vert
 			ew::Vec3 pos;
@@ -193,7 +194,7 @@ namespace ew {
 			mesh.vertices.push_back(vert);
 		}
 
-// Bottom Vertices ------------------------------------------------------*/
+	// Bottom Vertices ------------------------------------------------------*/
 		// Bottom Ring Pointing Out
 		for (int i = 0; i <= segments; i++) {
 			ew::Vec3 pos;
@@ -234,7 +235,7 @@ namespace ew {
 			mesh.vertices.push_back(vert);
 		}
 
-// Indices --------------------------------------------------------------*/
+	// Indices --------------------------------------------------------------*/
 		// Top Indices
 		unsigned int centre = 0;// Top Centre
 		unsigned int start = 2;	// Index of first ring vert
@@ -268,9 +269,9 @@ namespace ew {
 		start = segments * 3 + 5;	// Start of bottom (down) vertices. 3 rings + 3 dupes + 2 centre verts
 
 		for (int i = 0; i < segments; i++) {
-			mesh.indices.push_back(start + i);
-			mesh.indices.push_back(centre);
 			mesh.indices.push_back(start + i + 1);
+			mesh.indices.push_back(centre);
+			mesh.indices.push_back(start + i);
 		}
 
 		printf("Created cylinder\n");
@@ -290,25 +291,20 @@ namespace ew {
 		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
-		mesh.vertices.reserve(segments * 5 + 4);	// 4 rings with dupes of first verts?
-		mesh.indices.reserve(segments * 3 + 1);		// 
+		mesh.vertices.reserve(segments * 4);		// 
+		mesh.indices.reserve(segments * 2 + 2);		// 2 Caps, segment # of rows and cols
 
+	// Vertices -------------------------------------------------------------*/
 		// Top Centre Vert (creates dupes)
 		ew::Vertex topVert;
 		topVert.pos = { 0, radius, 0 };
-		for (int i = 0; i < segments; i++)
+		topVert.normal = { 0, 1, 0 };
+		for (int i = 0; i < segments; i++) {
+			topVert.uv.x = (float)i/segments;
+			topVert.uv.y = 1;
 			mesh.vertices.push_back(topVert);
+		}
 
-		
-
-		// Bottom Centre Vert
-		ew::Vertex botVert;
-		botVert.pos = { 0, -radius, 0 };
-		for (int i = 0; i < segments; i++)
-			mesh.vertices.push_back(botVert);
-
-
-// Vertices -------------------------------------------------------------*/
 		// Converge at poles
 		for (float row = 0; row <= segments; row++) {
 			float phi = row * step.y;
@@ -325,7 +321,7 @@ namespace ew {
 
 				ew::Vec2 uv;
 				uv.x = col / segments;
-				uv.y = row / segments;
+				uv.y = 1 - row / segments;
 
 				ew::Vertex vert;
 				vert.pos = pos;
@@ -335,12 +331,21 @@ namespace ew {
 			}
 		}
 
+		// Bottom Centre Vert (dupes)
+		ew::Vertex botVert;
+		botVert.pos = { 0, -radius, 0 };
+		topVert.normal = { 0, -1, 0 };
+		topVert.uv = 0;
+		for (int i = 0; i < segments; i++) {
+			topVert.uv.x = (float)i / segments;
+			topVert.uv.y = 0;
+			mesh.vertices.push_back(botVert);
+		}
 
-
-// Indices --------------------------------------------------------------*/
+	// Indices --------------------------------------------------------------*/
 		// Top Cap
-		int poleStart = 0;	// First pole vertex
-		int sideStart = segments * 3 + 1;	// First side index
+		int poleStart = 0;					// First pole vertex
+		int sideStart = segments * 2 + 1;	// First side index
 
 		for (int i = 0; i < segments; i++) {
 			mesh.indices.push_back(sideStart + i); // Side vert
@@ -348,12 +353,11 @@ namespace ew {
 			mesh.indices.push_back(sideStart + i + 1); // Next side vert
 		}
 
-		// Rows
-		// row = 0 & row < segments - 1 : to not draw caps 
+		// Rows, doesn't draw caps
 		int cols = segments + 1;
 		for (int row = 1; row < segments - 1; row++) {
-			for (int col = 0; col <= segments; col++) {
-				int start = row * cols + col;
+			for (int col = 0; col < segments; col++) {
+				int start = row * cols + col + segments;
 
 				mesh.indices.push_back(start);
 				mesh.indices.push_back(start + 1);
@@ -366,14 +370,14 @@ namespace ew {
 		}
 
 		// Bottom Cap
-		//poleStart = segments * 4 + 4;	// Bottom pole starting vertex
-		//sideStart = segments * 2;	// Last side index
+		poleStart = segments * segments + 2 * segments;	// Bottom pole starting vertex
+		sideStart = segments * segments + segments - 1;	// Last side index
 
-		//for (int i = 0; i < segments; i++) {
-		//	mesh.indices.push_back(sideStart + i);
-		//	mesh.indices.push_back(poleStart + i);
-		//	mesh.indices.push_back(sideStart + poleStart + i);
-		//}
+		for (int i = 0; i < segments; i++) {
+			mesh.indices.push_back(sideStart + i + 1);
+			mesh.indices.push_back(poleStart+i);
+			mesh.indices.push_back(sideStart + i);
+		}
 
 		printf("Created sphere\n");
 
@@ -398,41 +402,24 @@ namespace ew {
 		mesh.indices.reserve(segments * 3 + 1);		// 
 
 		
-// Vertices -------------------------------------------------------------*/
+	// Vertices -------------------------------------------------------------*/
 		// Creating tube
 		for (int i = 0; i < segments; i++)
 		{
 			float torusTheta = i * torusStep;
-			// Used to offset ring verts
-			//ew::Vec3 posOffset;
-			//posOffset.x = radius * cos(i * torusStep);
-			//posOffset.z = radius * sin(i * torusStep);
-			//posOffset.y = 0;
 
-			//// Horizontal ring // Comment out later
+			//// Horizontal ring visual
 			//ew::Vertex vert;
 			//vert.pos = posOffset;
 			//mesh.vertices.push_back(vert);
 
-
 			// Create the circle
 			for (float j = 0; j < ringSegments; j++) {
-				// Initial Positions
 				ew::Vec3 pos;
-				//pos.x = radius * cos(i * ringStep);
-				//pos.y = radius * sin(i * ringStep);
-
 				float ringTheta = j * ringStep;
 				pos.x = cos(torusTheta) * (radius + cos(ringTheta) * ringRadius);
-				pos.y = sin(torusTheta) * (radius + cos(ringTheta) * ringRadius);
-				pos.z = sin(ringTheta) * ringRadius;
-
-				// Position offset
-				//posOffset.x *= cos(i * ringStep);
-				//posOffset.y *= sin(i * ringStep);
-				//pos += posOffset;
-
-
+				pos.z = sin(torusTheta) * (radius + cos(ringTheta) * ringRadius);
+				pos.y = sin(ringTheta) * ringRadius;
 
 				ew::Vertex vert;
 				vert.pos = pos;
@@ -441,8 +428,18 @@ namespace ew {
 		}
 
 
-// Indices --------------------------------------------------------------*/
-		
+	// Indices --------------------------------------------------------------*/
+		for (int i = 0; i < segments - 1; i++)
+			for (int j = 0; j < ringSegments; j++) {
+				mesh.indices.push_back(j * ringSegments + i);
+				mesh.indices.push_back((j+1) * ringSegments + i);
+				mesh.indices.push_back((i+1) + ((j+1)*ringSegments));
+
+				mesh.indices.push_back(j * ringSegments + i);
+				mesh.indices.push_back((i+1) + ((j+1)*ringSegments));
+				mesh.indices.push_back((i + 1) + (j * ringSegments));
+			}
+	
 
 		printf("Created torus\n");
 

@@ -34,7 +34,7 @@ struct AppSettings {
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);
 	bool wireframe = true;
-	bool drawAsPoints = true;
+	bool drawAsPoints = false;
 	bool backFaceCulling = true;
 
 	//Euler angles (degrees)
@@ -85,40 +85,52 @@ int main() {
 	ew::Shader shader2("assets/vertexShader.vert", "assets/fragmentShader.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
-	// Changing subdivisions at runtime
-	int subdivs[3] = { 5, 3, 8 };
-	int torusSubdivs[2] = { 3, 30 };
-
-	// Changing sizes at runtime
-	// uh do this rq
-
 	// Create Cube
-	ew::MeshData cubeMeshData = ew::createCube(0.0f);
+	float cubeSize = 1;
+	ew::MeshData cubeMeshData = ew::createCube(cubeSize);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
-	ew::MeshData planeMD = ew::createPlane(0, subdivs[0]);
+	float planeSize = 1;
+	int planeSubdivs = 8;
+	ew::MeshData planeMD = ew::createPlane(planeSize, planeSubdivs);
 	ew::Mesh planeMesh(planeMD);
 
 	// Create Cylinder
-	ew::MeshData cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
+	float cylinderRadius = 1;
+	float cylinderHeight = 2;
+	int cylinderSubdivs = 8;
+	ew::MeshData cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 	ew::Mesh cylinderMesh(cylinderMD);
 	
 	// Create Sphere
-	ew::MeshData sphereMD = ew::createSphere(1, subdivs[2]);
+	float sphereRadius = 1;
+	int sphereSubdivs = 8;
+	ew::MeshData sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
 	ew::Mesh sphereMesh(sphereMD);
 
 	// Create Torus
-	ew::MeshData torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
+	float torusSize[2] = { 1, .5 };
+	int torusSubdivs[2] = { 8, 16 };
+	ew::MeshData torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 	ew::Mesh torusMesh(torusMD);
 
 
 	// Initialize transforms
 	ew::Transform cubeTransform;
+	cubeTransform.position.x = 0;
+
 	ew::Transform planeTransform;
+	planeTransform.position.x = 3;
+
 	ew::Transform cylinderTransform;
+	cylinderTransform.position.x = 6;
+
 	ew::Transform sphereTransform;
+	sphereTransform.position.x = 9;
+
 	ew::Transform torusTransform;
+	torusTransform.position.x = 12;
 
 
 	resetCamera(camera,cameraController);
@@ -155,26 +167,24 @@ int main() {
 		shader.setVec3("_LightDir", lightF);
 
 		// Draw cube
-		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		//cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", cubeTransform.getModelMatrix());
+		cubeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
 		// Draw plane
-		//shader.setMat4("_Model", planeTransform.getModelMatrix());
-		//planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", planeTransform.getModelMatrix());
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw cylinder
-		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		//cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		cylinderMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Draw polar sphere
-		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		//sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		sphereMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
 		// Draw torus
 		shader.setMat4("_Model", torusTransform.getModelMatrix());
 		torusMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-
-		
 
 // Render UI ------------------------------------------------------------*/
 		{
@@ -206,10 +216,12 @@ int main() {
 
 			ImGui::ColorEdit3("BG color", &appSettings.bgColor.x);
 			ImGui::ColorEdit3("Shape color", &appSettings.shapeColor.x);
+
 			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
 			if (appSettings.shadingModeIndex > 3) {
 				ImGui::DragFloat3("Light Rotation", &appSettings.lightRotation.x, 1.0f);
 			}
+
 			ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
 			if (ImGui::Checkbox("Wireframe", &appSettings.wireframe)) {
 				glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
@@ -222,38 +234,53 @@ int main() {
 			}
 
 			// Prolly put this all in a menu where you select an object like before, along with size
-			//if (ImGui::CollapsingHeader("Change Sizes"))
+			// If slider is true, then the value changed
 
-			if (ImGui::CollapsingHeader("Change Subdivisions")) {
-				// If slider is true, then the value changed
-				if (ImGui::SliderInt("Plane", &subdivs[0], 3, 100)) {
-					planeMD = ew::createPlane(10, subdivs[0]);
+			// Cube
+			if (ImGui::CollapsingHeader("Cube")) {
+				if (ImGui::SliderFloat("Cube Size", &cubeSize, 1, 10)) {
+					cubeMeshData = ew::createCube(cubeSize);
+					cubeMesh = cubeMeshData;
+				}
+			}
+
+			// Plane
+			if (ImGui::CollapsingHeader("Plane")) {
+				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100) ||
+					ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
+					planeMD = ew::createPlane(planeSize, planeSubdivs);
 					planeMesh = planeMD;
 				}
-
-
-				if (ImGui::SliderInt("Cylinder", &subdivs[1], 3, 100)) {
-					cylinderMD = ew::createCylinder(1, 2, subdivs[1]);
+			}
+			
+			// Cylinder
+			if (ImGui::CollapsingHeader("Cylinder")) {
+				if (ImGui::SliderInt("Cyl Subdivs", &cylinderSubdivs, 3, 100) ||
+					ImGui::SliderFloat("Cyl Radius", &cylinderRadius, 1, 5) ||
+					ImGui::SliderFloat("Cyl Height", &cylinderHeight, 1, 5)) {
+					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 					cylinderMesh = cylinderMD;
 				}
+			}
 
-				if (ImGui::SliderInt("Sphere", &subdivs[2], 3, 100)) {
-					sphereMD = ew::createSphere(1, subdivs[2]);
+			// Sphere
+			if (ImGui::CollapsingHeader("Sphere")) {
+				if (ImGui::SliderInt("Sph Subdivs", &sphereSubdivs, 3, 100) ||
+					ImGui::SliderFloat("Sph Radius", &sphereRadius, 1, 10)) {
+					sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
 					sphereMesh = sphereMD;
 				}
+			}
 
-				if (ImGui::SliderInt("Torus Ring", &torusSubdivs[0], 3, 100)) {
-					torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
+			// Torus
+			if (ImGui::CollapsingHeader("Torus")) {
+				if (ImGui::SliderInt("Torus Subdivs", &torusSubdivs[0], 3, 100) ||
+					ImGui::SliderInt("TOrus Ring Subdivs", &torusSubdivs[1], 3, 100) ||
+					ImGui::SliderFloat("Torus Radius", &torusSize[0], 0, 10) ||
+					ImGui::SliderFloat("Torus Ring Radius", &torusSize[1], 0, 10)) {
+					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
-
-				if (ImGui::SliderInt("Torus Inner", &torusSubdivs[1], 3, 100)) {
-					torusMD = ew::createTorus(1, 3, torusSubdivs[0], torusSubdivs[1]);
-					torusMesh = torusMD;
-				}
-
-
-
 			}
 
 			ImGui::End();
