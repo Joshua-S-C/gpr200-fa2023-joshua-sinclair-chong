@@ -404,9 +404,15 @@ namespace ew {
 		
 	// Vertices -------------------------------------------------------------*/
 		// Creating tube
-		for (int i = 0; i < segments; i++)
+		for (float i = 0; i < segments; i++)
 		{
 			float torusTheta = i * torusStep;
+
+			// Centre of Rings
+			ew::Vec3 posOffset;
+			posOffset.x = radius * cos(i * torusStep);
+			posOffset.z = radius * sin(i * torusStep);
+			posOffset.y = 0;
 
 			//// Horizontal ring visual
 			//ew::Vertex vert;
@@ -421,8 +427,16 @@ namespace ew {
 				pos.z = sin(torusTheta) * (radius + cos(ringTheta) * ringRadius);
 				pos.y = sin(ringTheta) * ringRadius;
 
+				ew::Vec3 norm = Normalize(posOffset - pos);
+
+				ew::Vec2 uv;
+				uv.x = j / ringSegments;
+				uv.y = i / ringSegments;
+
 				ew::Vertex vert;
 				vert.pos = pos;
+				vert.normal = norm;
+				vert.uv = uv;
 				mesh.vertices.push_back(vert);
 			}
 		}

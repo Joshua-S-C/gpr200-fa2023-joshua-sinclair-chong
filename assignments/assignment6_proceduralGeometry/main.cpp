@@ -118,7 +118,7 @@ int main() {
 
 	// Initialize transforms
 	ew::Transform cubeTransform;
-	cubeTransform.position.x = 0;
+	cubeTransform.position.x = -6;
 
 	ew::Transform planeTransform;
 	planeTransform.position.x = 3;
@@ -130,7 +130,7 @@ int main() {
 	sphereTransform.position.x = 9;
 
 	ew::Transform torusTransform;
-	torusTransform.position.x = 12;
+	torusTransform.position.x = 0;
 
 
 	resetCamera(camera,cameraController);
