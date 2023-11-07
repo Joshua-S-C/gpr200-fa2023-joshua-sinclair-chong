@@ -72,7 +72,7 @@ namespace ew {
 		MeshData mesh;
 		int rows = subdivs + 1, cols = subdivs + 1;
 		mesh.vertices.reserve(rows * cols);	// Subdiv+1 ^ 2 vertices
-		mesh.indices.reserve(rows * cols);	// Subdivisions+1 ^ 2 indices
+		mesh.indices.reserve(subdivs *  subdivs);	// Subdivisions^2 indices
 		
 		// Vertices
 		for (float rowNum = 0; rowNum <= subdivs; rowNum++) {
@@ -132,8 +132,8 @@ namespace ew {
 		float step = 2 * PI / segments;	// Angle per increment
 
 		// This seems like it's probably right
-		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings + 2 dupes + 2 centres?
-		mesh.indices.reserve(segments * 3);		// 
+		mesh.vertices.reserve(segments * 4 + 4);	// 4 rings + 2 dupes + 2 centres
+		mesh.indices.reserve(segments * 3 + 2);		// 
 
 		// Top Centre Vert
 		ew::Vertex topVert;
@@ -160,7 +160,7 @@ namespace ew {
 			// First ring pointing up
 			ew::Vec3 norm = { 0,1,0 };
 
-			ew::Vec2 uv;	// UV's need to be remapped to a 0-1 range. Currently its -1 to 1
+			ew::Vec2 uv;	// UV's remapped to a 0-1 range
 			uv.x = (sin(step * i) + 1) / 2;
 			uv.y = (cos(step * i) + 1) / 2;
 
@@ -291,7 +291,7 @@ namespace ew {
 		ew::Vec2 step = { (2 * PI / segments) , (PI / segments) };
 
 		// 
-		mesh.vertices.reserve(segments * 4);		// 
+		mesh.vertices.reserve(segments * 2 + ((segments+1) * (segments+1)));		// 2*seg for poles. seg+1 ^ 2 for rows
 		mesh.indices.reserve(segments * 2 + 2);		// 2 Caps, segment # of rows and cols
 
 	// Vertices -------------------------------------------------------------*/
