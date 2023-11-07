@@ -397,14 +397,13 @@ namespace ew {
 		float ringStep = TAU / ringSegments;
 		float torusStep = TAU / segments;
 
-		// 
-		mesh.vertices.reserve(segments * 5 + 4);	//
-		mesh.indices.reserve(segments * 3 + 1);		// 
+		mesh.vertices.reserve(segments * ringSegments);		//
+		mesh.indices.reserve(segments * ringSegments);		// 
 
 		
 	// Vertices -------------------------------------------------------------*/
 		// Creating tube
-		for (float i = 0; i < segments; i++)
+		for (float i = 0; i <= segments; i++)
 		{
 			float torusTheta = i * torusStep;
 
@@ -420,7 +419,7 @@ namespace ew {
 			//mesh.vertices.push_back(vert);
 
 			// Create the circle
-			for (float j = 0; j < ringSegments; j++) {
+			for (float j = 0; j <= ringSegments; j++) {
 				ew::Vec3 pos;
 				float ringTheta = j * ringStep;
 				pos.x = cos(torusTheta) * (radius + cos(ringTheta) * ringRadius);
@@ -443,17 +442,19 @@ namespace ew {
 
 
 	// Indices --------------------------------------------------------------*/
-		for (int i = 0; i < segments - 1; i++)
+		// Around Torus (Horizontal)
+		for (int i = 0; i < segments; i++)
+			// Around Rings (Vert)
 			for (int j = 0; j < ringSegments; j++) {
-				mesh.indices.push_back(j * ringSegments + i);
-				mesh.indices.push_back((j+1) * ringSegments + i);
-				mesh.indices.push_back((i+1) + ((j+1)*ringSegments));
+				int _rs = ringSegments + 1; // On extra to account for dupe verts
+				mesh.indices.push_back(j+1	+ ((i+1) * _rs));
+				mesh.indices.push_back(j	+ ((i+1) * _rs));
+				mesh.indices.push_back(j	+ (i * _rs));
 
-				mesh.indices.push_back(j * ringSegments + i);
-				mesh.indices.push_back((i+1) + ((j+1)*ringSegments));
-				mesh.indices.push_back((i + 1) + (j * ringSegments));
+				mesh.indices.push_back(j+1	+ (i * _rs));
+				mesh.indices.push_back(j+1	+ ((i+1) * _rs));
+				mesh.indices.push_back(j	+ (i * _rs));
 			}
-	
 
 		printf("Created torus\n");
 
