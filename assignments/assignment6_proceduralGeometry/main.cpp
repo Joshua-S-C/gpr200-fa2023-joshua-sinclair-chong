@@ -18,6 +18,8 @@
 #include <jsc/transformations.h>
 #include <jsc/texture.h>
 #include <jsc/camera.h>
+#include <jsc/procGen.h>
+
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
@@ -87,32 +89,32 @@ int main() {
 
 	// Create Cube
 	float cubeSize = 1;
-	ew::MeshData cubeMeshData = ew::createCube(cubeSize);
+	ew::MeshData cubeMeshData = jsc::createCube(cubeSize);
 	ew::Mesh cubeMesh(cubeMeshData);
 
 	// Create Plane
 	float planeSize = 1;
 	int planeSubdivs = 8;
-	ew::MeshData planeMD = ew::createPlane(planeSize, planeSubdivs);
+	ew::MeshData planeMD = jsc::createPlane(planeSize, planeSubdivs);
 	ew::Mesh planeMesh(planeMD);
 
 	// Create Cylinder
 	float cylinderRadius = 1;
 	float cylinderHeight = 2;
 	int cylinderSubdivs = 8;
-	ew::MeshData cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+	ew::MeshData cylinderMD = jsc::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 	ew::Mesh cylinderMesh(cylinderMD);
 	
 	// Create Sphere
 	float sphereRadius = 1;
 	int sphereSubdivs = 8;
-	ew::MeshData sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
+	ew::MeshData sphereMD = jsc::createSphere(sphereRadius, sphereSubdivs);
 	ew::Mesh sphereMesh(sphereMD);
 
 	// Create Torus
 	float torusSize[2] = { 1, .5 };
 	int torusSubdivs[2] = { 8, 16 };
-	ew::MeshData torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+	ew::MeshData torusMD = jsc::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 	ew::Mesh torusMesh(torusMD);
 
 
@@ -248,12 +250,12 @@ int main() {
 			// Plane
 			if (ImGui::CollapsingHeader("Plane")) {
 				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100)) {
-					planeMD = ew::createPlane(planeSize, planeSubdivs);
+					planeMD = jsc::createPlane(planeSize, planeSubdivs);
 					planeMesh = planeMD;
 				}
 
 				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
-					planeMD = ew::createPlane(planeSize, planeSubdivs);
+					planeMD = jsc::createPlane(planeSize, planeSubdivs);
 					planeMesh = planeMD;
 				}
 			}
@@ -261,15 +263,15 @@ int main() {
 			// Cylinder
 			if (ImGui::CollapsingHeader("Cylinder")) {
 				if (ImGui::SliderInt("Cyl Subdivs", &cylinderSubdivs, 3, 100)) {
-					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+					cylinderMD = jsc::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 					cylinderMesh = cylinderMD;
 				}
 				if (ImGui::SliderFloat("Cyl Radius", &cylinderRadius, 1, 5)) {
-					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+					cylinderMD = jsc::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 					cylinderMesh = cylinderMD;
 				}
 				if (ImGui::SliderFloat("Cyl Height", &cylinderHeight, 1, 5)) {
-					cylinderMD = ew::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
+					cylinderMD = jsc::createCylinder(cylinderRadius, cylinderHeight, cylinderSubdivs);
 					cylinderMesh = cylinderMD;
 				}
 			}
@@ -277,11 +279,11 @@ int main() {
 			// Sphere
 			if (ImGui::CollapsingHeader("Sphere")) {
 				if (ImGui::SliderInt("Sph Subdivs", &sphereSubdivs, 3, 100)) {
-					sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
+					sphereMD = jsc::createSphere(sphereRadius, sphereSubdivs);
 					sphereMesh = sphereMD;
 				}
 				if (ImGui::SliderFloat("Sph Radius", &sphereRadius, 1, 10)) {
-					sphereMD = ew::createSphere(sphereRadius, sphereSubdivs);
+					sphereMD = jsc::createSphere(sphereRadius, sphereSubdivs);
 					sphereMesh = sphereMD;
 				}
 			}
@@ -289,19 +291,19 @@ int main() {
 			// Torus
 			if (ImGui::CollapsingHeader("Torus")) {
 				if (ImGui::SliderInt("Torus Subdivs", &torusSubdivs[0], 3, 100)) {
-					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMD = jsc::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
 				if (ImGui::SliderInt("Torus Ring Subdivs", &torusSubdivs[1], 3, 100)) {
-					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMD = jsc::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
 				if (ImGui::SliderFloat("Torus Radius", &torusSize[0], 0, 10)) {
-					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMD = jsc::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
 				if (ImGui::SliderFloat("Torus Ring Radius", &torusSize[1], 0, 10)) {
-					torusMD = ew::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
+					torusMD = jsc::createTorus(torusSize[0], torusSize[1], torusSubdivs[0], torusSubdivs[1]);
 					torusMesh = torusMD;
 				}
 			}
