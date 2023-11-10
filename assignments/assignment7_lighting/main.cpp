@@ -15,6 +15,11 @@
 #include <ew/camera.h>
 #include <ew/cameraController.h>
 
+#include <jsc/transformations.h>
+#include <jsc/texture.h>
+#include <jsc/camera.h>
+#include <jsc/procGen.h>
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 
@@ -28,6 +33,7 @@ ew::Camera camera;
 ew::CameraController cameraController;
 
 int main() {
+// Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -58,6 +64,7 @@ int main() {
 	glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
 
+// Shader , Camera & Cubes ----------------------------------------------*/
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -78,6 +85,7 @@ int main() {
 
 	resetCamera(camera,cameraController);
 
+// Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -93,6 +101,7 @@ int main() {
 		glClearColor(bgColor.x, bgColor.y,bgColor.z,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+// Uniforms & Draw ------------------------------------------------------*/
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
@@ -113,7 +122,7 @@ int main() {
 
 		//TODO: Render point lights
 
-		//Render UI
+// Render UI ------------------------------------------------------------*/
 		{
 			ImGui_ImplGlfw_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
