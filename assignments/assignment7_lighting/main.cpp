@@ -19,6 +19,7 @@
 #include <jsc/texture.h>
 #include <jsc/camera.h>
 #include <jsc/procGen.h>
+#include <jsc/light.h>
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
@@ -32,18 +33,7 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
-struct Light {
-	ew::Transform transform; // World Space
-	ew::Vec3 clr; // RBG
-};
-
-struct Material {
-	// Coefficients. 0-1
-	float ambientK = .2;
-	float diffuseK = .5; 
-	float specularK = .5;
-	float shininess = 32;
-};
+bool phong = false;
 
 int main() {
 // Initialize -----------------------------------------------------------*/
@@ -85,13 +75,13 @@ int main() {
 	
 
 	// Lights
-	Light light;
+	jsc::Light light;
 	light.transform.position = { 0,0,1 };
 	light.clr = { 1,0,1 };
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 
 	// Materials
-	Material mat;
+	jsc::Material mat;
 
 	// Objects
 	ew::Mesh cubeMesh(ew::createCube(1.0f));
@@ -133,15 +123,12 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		shader.setBool("_Phong", phong);
 		
 		shader.setVec3("_Light.pos", light.transform.position);
 		shader.setVec3("_Light.clr", light.clr);
 
-		// I want a function for this but Im using eric's shader object
-		shader.setFloat("_Material.ambientK", mat.ambientK);
-		shader.setFloat("_Material.diffuseK", mat.diffuseK);
-		shader.setFloat("_Material.specularK", mat.specularK);
-		shader.setFloat("_Material.shininess", mat.shininess);
+		shader.setMaterial("_Material", mat);
 
 		shader.setVec3("_viewPos", camera.position);
 
@@ -194,13 +181,8 @@ int main() {
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Material")) {
-				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.1f);
-				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.1f);
-				ImGui::DragFloat("Specular K", &mat.specularK, 0.1f);
-				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f);
 
-			}
+			ImGui::Checkbox("Phong?", &phong);
 
 			if (ImGui::CollapsingHeader("Light 1")) {
 				ImGui::DragFloat3("Light Pos", &light.transform.position.x, 0.1f);
@@ -208,6 +190,13 @@ int main() {
 			}
 
 
+			if (ImGui::CollapsingHeader("Material")) {
+				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
+				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
+				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
+				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f, 2);
+
+			}
 
 			ImGui::ColorEdit3("BG color", &bgColor.x);
 			ImGui::End();

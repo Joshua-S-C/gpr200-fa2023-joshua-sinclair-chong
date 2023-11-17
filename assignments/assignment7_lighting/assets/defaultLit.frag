@@ -28,6 +28,7 @@ uniform Light _Light;
 uniform Material _Material;
 uniform sampler2D _Texture;
 uniform vec3 _ViewPos;
+uniform bool _Phong;
 
 void main(){
 	vec3 normal = normalize(fs_in.WorldNorm);
@@ -40,10 +41,19 @@ void main(){
 	float diffuse = _Material.diffuseK * max(dot(normal, lightDir), 0.0);
 	
 	// Specular
+	float specular;
 	vec3 viewDir = normalize(_ViewPos - fs_in.WorldPos);
-	vec3 reflectDir = reflect(-lightDir, normal);
-	float specular = _Material.specularK * pow(max(dot(viewDir, reflectDir), 0.0), _Material.shininess);
-	
-	vec3 result = (diffuse) * _Light.clr;
+
+	if (_Phong) {
+		// Phong
+		vec3 reflectVec = 2 * dot(lightDir, normal) * normal - lightDir;
+		specular = _Material.specularK * pow(max(dot(reflectVec, normal), 0.0), _Material.shininess);
+	} else {
+		// Blin Phong
+		vec3 halfVec = normalize(lightDir + viewDir);
+		specular = _Material.specularK * pow(max(dot(halfVec, normal), 0.0), _Material.shininess);
+	}
+
+	vec3 result = (ambient + diffuse + specular) * _Light.clr;
 	FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
 }

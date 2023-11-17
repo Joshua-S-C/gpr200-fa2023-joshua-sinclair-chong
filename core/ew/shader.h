@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "ewMath/ewMath.h"
+#include "../jsc/light.h"
+
 
 namespace ew {
 	std::string loadShaderSourceFromFile(const std::string& filePath);
@@ -18,6 +20,9 @@ namespace ew {
 		void setVec4(const std::string& name, float x, float y, float z, float w) const;
 		void setVec4(const std::string& name, const ew::Vec4& v) const;
 		void setMat4(const std::string& name, const ew::Mat4& m) const;
+
+		void setBool(const std::string& name, bool v) const;	// Added
+		void setMaterial(const std::string& name, jsc::Material& v) const; //Added
 	private:
 		unsigned int m_id; //Shader program handle
 	};

@@ -87,6 +87,7 @@ namespace ew {
 	{
 		glUseProgram(m_id);
 	}
+	
 	void Shader::setInt(const std::string& name, int v) const
 	{
 		glUniform1i(glGetUniformLocation(m_id, name.c_str()), v);
@@ -122,6 +123,20 @@ namespace ew {
 	void Shader::setMat4(const std::string& name, const ew::Mat4& m) const
 	{
 		glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, &m[0][0]);
+	}
+	
+	// Added. (Apparently this didn't exist)
+	void Shader::setBool(const std::string& name, bool v) const
+	{
+		glUniform1i(glGetUniformLocation(m_id, name.c_str()), v);
+	}
+	// Added
+	void Shader::setMaterial(const std::string& name, jsc::Material& v) const
+	{
+		glUniform1f(glGetUniformLocation(m_id, (name+".ambientK").c_str()), v.ambientK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".diffuseK").c_str()), v.diffuseK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".specularK").c_str()), v.specularK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".shininess").c_str()), v.shininess);
 	}
 }
 

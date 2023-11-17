@@ -15,7 +15,7 @@ uniform vec3 _WorldNorm;
 
 void main(){
 	vs_out.UV = vUV;
-	vs_out.WorldPos = vPos;
+	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	vs_out.WorldNorm = transpose(inverse(mat3(_Model))) * vNormal;
 
 	gl_Position = _ViewProjection * _Model * vec4(vPos,1.0);
