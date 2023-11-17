@@ -106,7 +106,7 @@ namespace ew {
 		glUniform1i(glGetUniformLocation(m_id, name.c_str()), v);
 	}
 	// Added
-	void Shader::setMaterial(const std::string& name, jsc::Material& v) const
+	void Shader::setMaterial(const std::string& name, jsc::Material v) const
 	{
 		glUniform1f(glGetUniformLocation(m_id, (name + ".ambientK").c_str()), v.ambientK);
 		glUniform1f(glGetUniformLocation(m_id, (name + ".diffuseK").c_str()), v.diffuseK);

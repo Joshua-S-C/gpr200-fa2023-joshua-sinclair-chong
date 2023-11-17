@@ -22,7 +22,7 @@ namespace ew {
 		void setMat4(const std::string& name, const ew::Mat4& m) const;
 
 		void setBool(const std::string& name, bool v) const;	// Added
-		void setMaterial(const std::string& name, jsc::Material& v) const; //Added
+		void setMaterial(const std::string& name, jsc::Material v) const; //Added
 	private:
 		unsigned int m_id; //Shader program handle
 	};
