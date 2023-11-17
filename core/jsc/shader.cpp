@@ -1,5 +1,9 @@
+#include <fstream>
+#include <sstream>
 #include "shader.h"
+#include "../ew/shader.h"
 #include "../ew/ewMath/mat4.h"
+#include "../ew/external/glad.h"
 
 namespace jsc {
 	std::string loadShaderSourceFromFile(const std::string& filePath) {
@@ -93,4 +97,20 @@ namespace jsc {
 		glUniformMatrix4fv(glGetUniformLocation(m_id, name.c_str()), 1, GL_FALSE, &v[0][0]);
 	}
 
+}
+
+namespace ew {
+	// Added. (Apparently this didn't exist)
+	void Shader::setBool(const std::string& name, bool v) const
+	{
+		glUniform1i(glGetUniformLocation(m_id, name.c_str()), v);
+	}
+	// Added
+	void Shader::setMaterial(const std::string& name, jsc::Material& v) const
+	{
+		glUniform1f(glGetUniformLocation(m_id, (name + ".ambientK").c_str()), v.ambientK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".diffuseK").c_str()), v.diffuseK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".specularK").c_str()), v.specularK);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".shininess").c_str()), v.shininess);
+	}
 }
