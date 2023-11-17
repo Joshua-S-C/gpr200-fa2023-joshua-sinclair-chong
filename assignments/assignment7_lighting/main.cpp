@@ -32,6 +32,19 @@ ew::Vec3 bgColor = ew::Vec3(0.1f);
 ew::Camera camera;
 ew::CameraController cameraController;
 
+struct Light {
+	ew::Transform transform; // World Space
+	ew::Vec3 clr; // RBG
+};
+
+struct Material {
+	// Coefficients. 0-1
+	float ambientK = .2;
+	float diffuseK = .5; 
+	float specularK = .5;
+	float shininess = 32;
+};
+
 int main() {
 // Initialize -----------------------------------------------------------*/
 	printf("Initializing...");
@@ -64,24 +77,38 @@ int main() {
 	glCullFace(GL_BACK);
 	glEnable(GL_DEPTH_TEST);
 
-// Shader , Camera & Cubes ----------------------------------------------*/
+// Objects & Shaders ----------------------------------------------------*/
 	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
+	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
+	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
+	
 
-	//Create cube
+	// Lights
+	Light light;
+	light.transform.position = { 0,0,1 };
+	light.clr = { 1,0,1 };
+	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
+
+	// Materials
+	Material mat;
+
+	// Objects
 	ew::Mesh cubeMesh(ew::createCube(1.0f));
 	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
 	ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
+	//ew::Mesh torusMesh(jsc::createTorus(1.0f, 0.3f, 32, 16));
 
-	//Initialize transforms
 	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
 	ew::Transform sphereTransform;
 	ew::Transform cylinderTransform;
+	ew::Transform torusTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 	sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
+	//torusTransform.position = ew::Vec3(0, 0.0f, -3.0f);
 
 	resetCamera(camera,cameraController);
 
@@ -106,6 +133,17 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		
+		shader.setVec3("_Light.pos", light.transform.position);
+		shader.setVec3("_Light.clr", light.clr);
+
+		// I want a function for this but Im using eric's shader object
+		shader.setFloat("_Material.ambientK", mat.ambientK);
+		shader.setFloat("_Material.diffuseK", mat.diffuseK);
+		shader.setFloat("_Material.specularK", mat.specularK);
+		shader.setFloat("_Material.shininess", mat.shininess);
+
+		shader.setVec3("_viewPos", camera.position);
 
 		//Draw shapes
 		shader.setMat4("_Model", cubeTransform.getModelMatrix());
@@ -120,7 +158,15 @@ int main() {
 		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
 		cylinderMesh.draw();
 
+		//shader.setMat4("_Model", torusTransform.getModelMatrix());
+		//torusMesh.draw();
+
 		//TODO: Render point lights
+		unlitShader.use();
+		unlitShader.setMat4("_ViewProjection", camera.ProjectionMatrix()* camera.ViewMatrix());
+		unlitShader.setMat4("_Model", light.transform.getModelMatrix());
+		unlitShader.setVec3("_Color", light.clr);
+		lightMesh.draw();
 
 // Render UI ------------------------------------------------------------*/
 		{
@@ -147,6 +193,21 @@ int main() {
 					resetCamera(camera, cameraController);
 				}
 			}
+
+			if (ImGui::CollapsingHeader("Material")) {
+				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.1f);
+				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.1f);
+				ImGui::DragFloat("Specular K", &mat.specularK, 0.1f);
+				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f);
+
+			}
+
+			if (ImGui::CollapsingHeader("Light 1")) {
+				ImGui::DragFloat3("Light Pos", &light.transform.position.x, 0.1f);
+				ImGui::ColorEdit3("Light Color", &light.clr.x);
+			}
+
+
 
 			ImGui::ColorEdit3("BG color", &bgColor.x);
 			ImGui::End();
