@@ -12,9 +12,9 @@ namespace jsc {
 
 	struct Material {
 		// Coefficients. 0-1
-		float ambientK = .2;
-		float diffuseK = .5;
-		float specularK = .5;
+		float ambientK = .05;
+		float diffuseK = .2;
+		float specularK = .7;
 		float shininess = 32;
 	};
 }
