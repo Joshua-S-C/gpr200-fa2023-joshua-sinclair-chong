@@ -20,6 +20,7 @@
 #include <jsc/camera.h>
 #include <jsc/procGen.h>
 #include <jsc/light.h>
+#include <jsc/waves.h>
 
 #define MAX_LIGHTS 4
 //int numLights = MAX_LIGHTS;
@@ -74,6 +75,8 @@ int main() {
 // Objects & Shaders ----------------------------------------------------*/
 	ew::Shader shader("assets/water.vert", "assets/water.frag");
 	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
+
+	jsc::Wave wave1(1.0f, 1.0f, ew::Vec3{0,1,0});
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -131,6 +134,9 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
 		shader.setFloat("_Time", (float)glfwGetTime());
+		shader.setWave("_wave1", wave1);
+
+
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		shader.setMaterial("_Material", mat);
 		shader.setVec3("_ViewPos", camera.position);

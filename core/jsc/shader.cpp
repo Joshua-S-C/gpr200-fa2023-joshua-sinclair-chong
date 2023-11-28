@@ -4,6 +4,8 @@
 #include "../ew/shader.h"
 #include "../ew/ewMath/mat4.h"
 #include "../ew/external/glad.h"
+#include "../jsc/waves.h"
+
 
 namespace jsc {
 	std::string loadShaderSourceFromFile(const std::string& filePath) {
@@ -112,5 +114,12 @@ namespace ew {
 		glUniform1f(glGetUniformLocation(m_id, (name + ".diffuseK").c_str()), v.diffuseK);
 		glUniform1f(glGetUniformLocation(m_id, (name + ".specularK").c_str()), v.specularK);
 		glUniform1f(glGetUniformLocation(m_id, (name + ".shininess").c_str()), v.shininess);
+	}
+	// Added
+	void Shader::setWave(const std::string& name, jsc::Wave w) const
+	{
+		glUniform1f(glGetUniformLocation(m_id, (name + ".a").c_str()), w.a);
+		glUniform1f(glGetUniformLocation(m_id, (name + ".f").c_str()), w.f);
+		glUniform3f(glGetUniformLocation(m_id, (name + ".clr").c_str()), w.clr.x, w.clr.x, w.clr.z);
 	}
 }

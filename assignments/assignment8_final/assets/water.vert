@@ -9,11 +9,19 @@ out Surface{
 	vec3 WorldNorm;
 }vs_out;
 
+uniform float _Time;
+
 uniform mat4 _Model;
 uniform mat4 _ViewProjection;
 uniform vec3 _WorldNorm;
 
-uniform float _Time;
+struct Wave {
+	float f, a;
+	vec3 clr;
+};
+
+uniform Wave _wave1;
+
 
 void main(){
 	vs_out.UV = vUV;
