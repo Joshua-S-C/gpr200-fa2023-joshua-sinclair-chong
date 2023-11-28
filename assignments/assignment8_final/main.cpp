@@ -22,7 +22,8 @@
 #include <jsc/light.h>
 
 #define MAX_LIGHTS 4
-int numLights = MAX_LIGHTS;
+//int numLights = MAX_LIGHTS;
+int numLights = 1;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
@@ -77,11 +78,16 @@ int main() {
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
 	// Lights
-	jsc::Light lights[4];
-	for (int i = 0; i < numLights; i++) {
-		lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i<2) - 1) };
-		lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
-	}
+	//jsc::Light lights[4];
+	//for (int i = 0; i < numLights; i++) {
+	//	lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i<2) - 1) };
+	//	lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
+	//}
+
+	jsc::Light lights[1];
+	lights[0].transform.position = { 0,0,0 };
+	lights[0].clr = { 1,1,0 };
+
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 
 	// Material
@@ -124,6 +130,7 @@ int main() {
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
+		shader.setFloat("_Time", (float)glfwGetTime());
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		shader.setMaterial("_Material", mat);
 		shader.setVec3("_ViewPos", camera.position);

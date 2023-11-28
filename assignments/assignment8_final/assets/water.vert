@@ -13,10 +13,18 @@ uniform mat4 _Model;
 uniform mat4 _ViewProjection;
 uniform vec3 _WorldNorm;
 
+uniform float _Time;
+
 void main(){
 	vs_out.UV = vUV;
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	vs_out.WorldNorm = transpose(inverse(mat3(_Model))) * vNormal;
 
-	gl_Position = _ViewProjection * _Model * vec4(vPos,1.0);
+	// Undulation
+	vec3 _vPos = vec3(vs_out.WorldPos.x, 
+	vs_out.WorldPos.y + sin(vs_out.WorldPos.x + _Time), 
+	vs_out.WorldPos.z + sin(vs_out.WorldPos.z + _Time));
+
+
+	gl_Position = _ViewProjection * _Model * vec4(_vPos,1.0);
 }
