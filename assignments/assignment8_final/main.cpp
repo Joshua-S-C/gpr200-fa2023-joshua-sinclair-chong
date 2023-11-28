@@ -71,7 +71,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 // Objects & Shaders ----------------------------------------------------*/
-	ew::Shader shader("assets/defaultLit.vert", "assets/defaultLit.frag");
+	ew::Shader shader("assets/water.vert", "assets/water.frag");
 	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
@@ -88,19 +88,19 @@ int main() {
 	jsc::Material mat;
 
 	// Objects
-	ew::Mesh cubeMesh(ew::createCube(1.0f));
 	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
-	ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
-	ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
+	//ew::Mesh cubeMesh(ew::createCube(1.0f));
+	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
+	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
 
-	ew::Transform cubeTransform;
 	ew::Transform planeTransform;
-	ew::Transform sphereTransform;
-	ew::Transform cylinderTransform;
-	ew::Transform torusTransform;
+	//ew::Transform cubeTransform;
+	//ew::Transform sphereTransform;
+	//ew::Transform cylinderTransform;
+	//ew::Transform torusTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
-	sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
-	cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
+	//sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
+	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 
 	resetCamera(camera,cameraController);
 
@@ -136,17 +136,17 @@ int main() {
 		}
 
 		//Draw shapes
-		shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		cubeMesh.draw();
-
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw();
 
-		shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		sphereMesh.draw();
+		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
+		//cubeMesh.draw();
 
-		shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		cylinderMesh.draw();
+		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		//sphereMesh.draw();
+
+		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		//cylinderMesh.draw();
 
 		// Render point lights
 		unlitShader.use();
