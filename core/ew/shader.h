@@ -24,7 +24,7 @@ namespace ew {
 
 		void setBool(const std::string& name, bool v) const;	// Added
 		void setMaterial(const std::string& name, jsc::Material v) const; //Added
-		void setWave(const std::string& name, jsc::Wave w) const; //Added
+		//void setWave(const std::string& name, jsc::Wave wave) const; //Added
 	private:
 		unsigned int m_id; //Shader program handle
 	};

@@ -2,9 +2,10 @@
 
 
 namespace jsc {
-	Wave::Wave(float frequency, float amplitude, ew::Vec3 color) {
+	Wave::Wave(float frequency, float amplitude, float speed, ew::Vec3 color) {
 		f = frequency;
 		a = amplitude;
+		s = speed;
 		clr = color;
 	}
 

@@ -33,7 +33,19 @@ int SCREEN_WIDTH = 1080;
 int SCREEN_HEIGHT = 720;
 
 float prevTime;
-ew::Vec3 bgColor = ew::Vec3(0.1f);
+//ew::Vec3 bgColor = ew::Vec3(0.1f);
+
+struct AppSettings {
+	const char* shadingModeNames[6] = { "Solid Color","Normals","UVs","Texture","Lit","Texture Lit" };
+	int shadingModeIndex;
+
+	ew::Vec3 bgColor = ew::Vec3(0.1f);
+	ew::Vec3 shapeColor = ew::Vec3(1.0f);
+
+	bool wireframe = true;
+	bool drawAsPoints = false;
+	bool backFaceCulling = true;
+}appSettings;
 
 ew::Camera camera;
 ew::CameraController cameraController;
@@ -69,14 +81,14 @@ int main() {
 
 	//Global settings
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	glCullFace(GL_BACK);	// TODO Will need to be changed for the skybox
 	glEnable(GL_DEPTH_TEST);
 
 // Objects & Shaders ----------------------------------------------------*/
 	ew::Shader shader("assets/water.vert", "assets/water.frag");
 	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
 
-	jsc::Wave wave1(1.0f, 1.0f, ew::Vec3{0,1,0});
+	jsc::Wave wave1(1.0f, 1.0f, 1.0f, ew::Vec3{0,1,0});
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -97,17 +109,20 @@ int main() {
 	jsc::Material mat;
 
 	// Objects
-	ew::Mesh planeMesh(ew::createPlane(5.0f, 5.0f, 10));
+	int planeSubdivs = 8;
+	float planeSize = 5.0f;
+	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
+	ew::Transform planeTransform;
+	planeTransform.position = ew::Vec3(0, -1.0, 0);
+
+
 	//ew::Mesh cubeMesh(ew::createCube(1.0f));
 	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
-
-	ew::Transform planeTransform;
 	//ew::Transform cubeTransform;
 	//ew::Transform sphereTransform;
 	//ew::Transform cylinderTransform;
 	//ew::Transform torusTransform;
-	planeTransform.position = ew::Vec3(0, -1.0, 0);
 	//sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 
@@ -126,15 +141,24 @@ int main() {
 		cameraController.Move(window, &camera, deltaTime);
 
 		//RENDER
-		glClearColor(bgColor.x, bgColor.y,bgColor.z,1.0f);
+		glClearColor(appSettings.bgColor.x, appSettings.bgColor.y, appSettings.bgColor.z,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 // Uniforms & Draw ------------------------------------------------------*/
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
+
+		shader.setInt("_Mode", appSettings.shadingModeIndex);
+		shader.setVec3("_UnshadedColor", appSettings.shapeColor);
+
 		shader.setFloat("_Time", (float)glfwGetTime());
-		shader.setWave("_wave1", wave1);
+		
+		//shader.setWave("_wave1", wave1);
+		shader.setFloat("_wave1.f", wave1.f);
+		shader.setFloat("_wave1.a", wave1.a);
+		shader.setFloat("_wave1.s", wave1.s);
+		shader.setVec3("_wave1.clr", wave1.clr);
 
 
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
@@ -150,14 +174,12 @@ int main() {
 
 		//Draw shapes
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
-		planeMesh.draw();
+		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
 		//cubeMesh.draw();
-
 		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		//sphereMesh.draw();
-
 		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
 		//cylinderMesh.draw();
 
@@ -177,6 +199,55 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
+
+			// View Modes
+			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
+			ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
+			if (ImGui::Checkbox("Wireframe", &appSettings.wireframe)) {
+				glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
+			}
+			if (ImGui::Checkbox("Back-face culling", &appSettings.backFaceCulling)) {
+				if (appSettings.backFaceCulling)
+					glEnable(GL_CULL_FACE);
+				else
+					glDisable(GL_CULL_FACE);
+			}
+
+			// Lighting
+			ImGui::Checkbox("Phong?", &phong);
+			ImGui::SliderInt("# of Lights", &numLights, 0, MAX_LIGHTS);
+			if (ImGui::CollapsingHeader("Lights")) {
+				for (int i = 0; i < numLights; i++) {
+					ImGui::PushID(i);
+					ImGui::DragFloat3("Position", &lights[i].transform.position.x, 0.1f);
+					ImGui::ColorEdit3("Colour", &lights[i].clr.x, 0.1f);
+					ImGui::PopID();
+				}
+			}
+
+			// Material Properties
+			if (ImGui::CollapsingHeader("Material")) {
+				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
+				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
+				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
+				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f, 2);
+
+			}
+
+			// Plane Properties
+			if (ImGui::CollapsingHeader("Plane Properties")) {
+				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100)) {
+					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
+					planeMesh = planeMesh;
+				}
+
+				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
+					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
+					planeMesh = planeMesh;
+				}
+			}
+
+			// Camera Properties
 			if (ImGui::CollapsingHeader("Camera")) {
 				ImGui::DragFloat3("Position", &camera.position.x, 0.1f);
 				ImGui::DragFloat3("Target", &camera.target.x, 0.1f);
@@ -194,30 +265,8 @@ int main() {
 				if (ImGui::Button("Reset")) {
 					resetCamera(camera, cameraController);
 				}
+				ImGui::ColorEdit3("BG color", &appSettings.bgColor.x);
 			}
-
-			ImGui::Checkbox("Phong?", &phong);
-
-			ImGui::SliderInt("# of Lights", &numLights, 0, MAX_LIGHTS);
-
-			if (ImGui::CollapsingHeader("Lights")) {
-				for (int i = 0; i < numLights; i++) {
-					ImGui::PushID(i);
-					ImGui::DragFloat3("Position", &lights[i].transform.position.x, 0.1f);
-					ImGui::ColorEdit3("Colour", &lights[i].clr.x, 0.1f);
-					ImGui::PopID();
-				}
-			}
-
-			if (ImGui::CollapsingHeader("Material")) {
-				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
-				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
-				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
-				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f, 2);
-
-			}
-
-			ImGui::ColorEdit3("BG color", &bgColor.x);
 
 			ImGui::End();
 			ImGui::Render();
