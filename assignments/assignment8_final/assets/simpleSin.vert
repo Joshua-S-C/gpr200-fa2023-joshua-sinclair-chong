@@ -37,9 +37,9 @@ void main(){
 		k * _wave1.a * cos(f), 
 		0));
 	vs_out.WorldNorm = vec3(-tangent.y, tangent.x, 0);
+	//vs_out.WorldNorm = transpose(inverse(mat3(_Model))) * vNormal;
 
 	// Undulation -----------------------------------------------------------*/
-	
 	//vec3 undulate;
 	//vPos.y = _wave1.a * sin(k * vPos.x);
 	//undulate.y = _wave1.a * sin(_wave1.f * (vs_out.WorldPos.x - _Time * _wave1.s));

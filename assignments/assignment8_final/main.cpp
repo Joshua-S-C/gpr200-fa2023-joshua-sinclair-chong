@@ -37,10 +37,10 @@ float prevTime;
 
 struct AppSettings {
 	const char* shadingModeNames[6] = { "Solid Color","Normals","UVs","Texture","Lit","Texture Lit" };
-	int shadingModeIndex;
+	int shadingModeIndex = 1;
 
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
-	ew::Vec3 shapeColor = ew::Vec3(1.0f);
+	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
 
 	bool wireframe = true;
 	bool drawAsPoints = false;
@@ -85,10 +85,10 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 // Objects & Shaders ----------------------------------------------------*/
-	ew::Shader shader("assets/water.vert", "assets/water.frag");
+	ew::Shader shader("assets/water.vert", "assets/water.frag"); // First shader
 	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
 
-	jsc::Wave wave1(1.0f, 1.0f, 1.0f, ew::Vec3{0,1,0});
+	jsc::Wave wave1(1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -109,8 +109,8 @@ int main() {
 	jsc::Material mat;
 
 	// Objects
-	int planeSubdivs = 8;
-	float planeSize = 5.0f;
+	int planeSubdivs = 50;
+	float planeSize = 10.0f;
 	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
 	ew::Transform planeTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
@@ -150,7 +150,7 @@ int main() {
 		shader.setInt("_Texture", 0);
 
 		shader.setInt("_Mode", appSettings.shadingModeIndex);
-		shader.setVec3("_UnshadedColor", appSettings.shapeColor);
+		shader.setVec3("_UnshadedColor", wave1.clr);
 
 		shader.setFloat("_Time", (float)glfwGetTime());
 		
@@ -199,6 +199,15 @@ int main() {
 			ImGui::NewFrame();
 
 			ImGui::Begin("Settings");
+
+			// Wave Settings
+			if (ImGui::CollapsingHeader("Wave")) {
+				ImGui::DragFloat("Frequency", &wave1.f, 0.01f, 0, 10);
+				ImGui::DragFloat("Amplitude", &wave1.a, 0.01f, 0, 10);
+				ImGui::DragFloat("Speed", &wave1.s, 0.01f, 0, 10);
+				ImGui::ColorPicker3("Colour", &wave1.clr.x);
+			}
+
 
 			// View Modes
 			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
