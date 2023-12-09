@@ -26,8 +26,14 @@
 //int numLights = MAX_LIGHTS;
 int numLights = 1;
 
+int numFrames = 0;
+float timePerFrame = 0;
+
+
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
+void setWave(ew::Shader& shader, jsc::Wave wave);
+void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time);
 
 int SCREEN_WIDTH = 1080;
 int SCREEN_HEIGHT = 720;
@@ -46,6 +52,9 @@ struct AppSettings {
 
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
+	
+	int blendModeIndex = 7;
+	int blendModes[20] = { GL_ZERO ,GL_ONE ,GL_SRC_COLOR ,GL_ONE_MINUS_SRC_COLOR ,GL_DST_COLOR ,GL_ONE_MINUS_DST_COLOR ,GL_SRC_ALPHA ,GL_ONE_MINUS_SRC_ALPHA ,GL_DST_ALPHA ,GL_ONE_MINUS_DST_ALPHA ,GL_CONSTANT_COLOR ,GL_ONE_MINUS_CONSTANT_COLOR ,GL_CONSTANT_ALPHA ,GL_ONE_MINUS_CONSTANT_ALPHA ,GL_SRC_ALPHA_SATURATE ,GL_SRC1_COLOR ,GL_ONE_MINUS_SRC1_COLOR ,GL_SRC1_ALPHA ,GL_ONE_MINUS_SRC1_ALPHA };
 
 	bool lit = true;
 	bool wireframe = true;
@@ -53,6 +62,8 @@ struct AppSettings {
 	bool backFaceCulling = true;
 	bool renderLights = true;
 }appSettings;
+
+
 
 ew::Camera camera;
 ew::CameraController cameraController;
@@ -67,7 +78,7 @@ int main() {
 		return 1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Camera", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Final", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -90,34 +101,30 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);	// TODO Will need to be changed for the skybox
 	glEnable(GL_DEPTH_TEST);
+	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
+	glEnable(GL_BLEND);
 
 // Objects & Shaders ----------------------------------------------------*/
-	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // First shader
-	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
+	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
+	
+	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
 
 	jsc::Wave wave1(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
-	// Lights
-	//jsc::Light lights[4];
-	//for (int i = 0; i < numLights; i++) {
-	//	lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i<2) - 1) };
-	//	lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
-	//}
+	// Material
+	jsc::Material mat;
 
+	// Lights
+	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 	jsc::Light lights[4];
 	lights[0].transform.position = { 0,0,0 };
-	lights[0].clr = { 1,1,0 };
+	lights[0].clr = { 1,1,1 };
 	for (int i = 1; i < numLights; i++) {
 		lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i < 2) - 1) };
 		lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
 	}
-
-	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
-
-	// Material
-	jsc::Material mat;
 
 	// Objects
 	int planeSubdivs = 50;
@@ -126,7 +133,7 @@ int main() {
 	ew::Transform planeTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 
-
+	// Other objects
 	//ew::Mesh cubeMesh(ew::createCube(1.0f));
 	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
@@ -147,6 +154,10 @@ int main() {
 		float deltaTime = time - prevTime;
 		prevTime = time;
 
+		// Update frame draw time
+		float lastTime = 0;
+		frameRate(timePerFrame, numFrames, lastTime, time);
+
 		//Update camera
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
 		cameraController.Move(window, &camera, deltaTime);
@@ -160,13 +171,13 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
 
 		// 
-		//setWave(shader, wave1);
-		shader.setFloat("_wave1.l", wave1.l);
-		shader.setFloat("_wave1.a", wave1.a);
-		shader.setFloat("_wave1.s", wave1.s);
-		shader.setFloat("alpha", wave1.alpha);
-		shader.setFloat("blend", wave1.blend);
-		shader.setVec3("_wave1.clr", wave1.clr);
+		setWave(shader, wave1);
+		//shader.setFloat("_wave1.l", wave1.l);
+		//shader.setFloat("_wave1.a", wave1.a);
+		//shader.setFloat("_wave1.s", wave1.s);
+		//shader.setFloat("alpha", wave1.alpha);
+		//shader.setFloat("blend", wave1.blend);
+		//shader.setVec3("_wave1.clr", wave1.clr);
 
 		shader.setInt("_Texture", 0);
 
@@ -198,11 +209,11 @@ int main() {
 
 		// Render point lights
 		if (appSettings.renderLights) {
-			unlitShader.use();
-			unlitShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+			lightsShader.use();
+			lightsShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 			for (int i = 0; i < numLights; i++) {
-				unlitShader.setMat4("_Model", lights[i].transform.getModelMatrix());
-				unlitShader.setVec3("_Color", lights[i].clr);
+				lightsShader.setMat4("_Model", lights[i].transform.getModelMatrix());
+				lightsShader.setVec3("_Color", lights[i].clr);
 				lightMesh.draw();
 			}
 		}
@@ -215,6 +226,8 @@ int main() {
 
 			ImGui::Begin("Settings");
 
+			ImGui::Text(std::to_string(timePerFrame).c_str());
+
 			// Change the shader
 			if (ImGui::Checkbox("Lit", &appSettings.lit)){
 				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex],
@@ -224,7 +237,6 @@ int main() {
 				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex], 
 					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
 			}
-			
 
 
 			// Wave Settings
@@ -252,6 +264,8 @@ int main() {
 				else
 					glDisable(GL_CULL_FACE);
 			}
+			if (ImGui::SliderInt("Blend Mode", &appSettings.blendModeIndex, 0, 20))
+				glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 
 			// Lighting
 			ImGui::Checkbox("Render Lights", &appSettings.renderLights);
@@ -343,10 +357,31 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 /// Sets all relevant uniforms
 /// </summary>
 void setWave(ew::Shader& shader, jsc::Wave wave) {
-	shader.setFloat("_wave1.f", wave.l);
+	shader.setFloat("_wave1.l", wave.l);
 	shader.setFloat("_wave1.a", wave.a);
 	shader.setFloat("_wave1.s", wave.s);
 	shader.setFloat("alpha", wave.alpha);
 	shader.setFloat("blend", wave.blend);
 	shader.setVec3("_wave1.clr", wave.clr);
+}
+
+/// <summary>
+/// Calcs the number of ms between drawing frames
+/// </summary>
+void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time) {
+	printf(std::to_string(numFrames).c_str());
+	printf(std::to_string(lastTime).c_str());
+	printf(std::to_string(time).c_str());
+	printf(std::to_string(timePerFrame).c_str());
+	printf("\n");
+	
+	numFrames++;
+
+	// Update every second
+	if (time - lastTime > 1) {
+		timePerFrame = 1000.0 / double(numFrames);
+		numFrames = 0;
+		lastTime += 1;
+	}
+
 }
