@@ -36,8 +36,8 @@ float prevTime;
 //ew::Vec3 bgColor = ew::Vec3(0.1f);
 
 struct AppSettings {
-	const char* shadingModeNames[6] = { "Solid Color","Normals","UVs","Texture","Lit","Texture Lit" };
-	int shadingModeIndex;
+	const char* shadingModeNames[5] = { "Solid Color","Normals","UVs","Texture","Lit" };
+	int shadingModeIndex = 1;
 
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);
@@ -45,6 +45,7 @@ struct AppSettings {
 	bool wireframe = true;
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
+	bool renderLights = true;
 }appSettings;
 
 ew::Camera camera;
@@ -184,12 +185,14 @@ int main() {
 		//cylinderMesh.draw();
 
 		// Render point lights
-		unlitShader.use();
-		unlitShader.setMat4("_ViewProjection", camera.ProjectionMatrix()* camera.ViewMatrix());
-		for (int i = 0; i < numLights; i++) {
-			unlitShader.setMat4("_Model", lights[i].transform.getModelMatrix());
-			unlitShader.setVec3("_Color", lights[i].clr);
-			lightMesh.draw();
+		if (appSettings.renderLights) {
+			unlitShader.use();
+			unlitShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+			for (int i = 0; i < numLights; i++) {
+				unlitShader.setMat4("_Model", lights[i].transform.getModelMatrix());
+				unlitShader.setVec3("_Color", lights[i].clr);
+				lightMesh.draw();
+			}
 		}
 
 // Render UI ------------------------------------------------------------*/
@@ -200,6 +203,15 @@ int main() {
 
 			ImGui::Begin("Settings");
 
+			// Wave Properties
+			if (ImGui::CollapsingHeader("Wave")) {
+				ImGui::DragFloat("Frequency", &wave1.f, 0.1f);
+				ImGui::DragFloat("Amplitude", &wave1.a, 0.1f);
+				ImGui::DragFloat("Speed", &wave1.s, 0.1f);
+				ImGui::ColorEdit3("Colour", &wave1.clr.x, 0.1f);
+			}
+
+			
 			// View Modes
 			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
 			ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
@@ -214,6 +226,7 @@ int main() {
 			}
 
 			// Lighting
+			ImGui::Checkbox("Render Lights", &appSettings.renderLights);
 			ImGui::Checkbox("Phong?", &phong);
 			ImGui::SliderInt("# of Lights", &numLights, 0, MAX_LIGHTS);
 			if (ImGui::CollapsingHeader("Lights")) {
@@ -223,15 +236,6 @@ int main() {
 					ImGui::ColorEdit3("Colour", &lights[i].clr.x, 0.1f);
 					ImGui::PopID();
 				}
-			}
-
-			// Material Properties
-			if (ImGui::CollapsingHeader("Material")) {
-				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
-				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
-				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
-				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f, 2);
-
 			}
 
 			// Plane Properties
@@ -245,6 +249,14 @@ int main() {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
+			}
+
+			// Material Properties
+			if (ImGui::CollapsingHeader("Material Properties")) {
+				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
+				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
+				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
+				ImGui::DragFloat("Shininess", &mat.shininess, 0.1f, 0);
 			}
 
 			// Camera Properties
