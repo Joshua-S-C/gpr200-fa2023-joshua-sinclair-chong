@@ -17,7 +17,7 @@ uniform mat4 _ViewProjection;
 uniform vec3 _WorldNorm;
 
 struct Wave {
-	float f, a, s;
+	float l, a, s;
 	vec3 clr;
 };
 
@@ -29,8 +29,8 @@ void main(){
 	vs_out.WaveClr = _wave1.clr;
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	
-	float waveLength = 2 * _wave1.f; // frequency = 2 / wavelength
-	float k = 2 * radians(180) / waveLength;
+	//float waveLength = 2 * _wave1.l; // frequency = 2 / wavelength
+	float k = 2 * radians(180) / _wave1.l;
 	float f = k * (vPos.x - _Time * _wave1.s);
 
 	// Normal Calc ----------------------------------------------------------*/
@@ -47,7 +47,7 @@ void main(){
 	//undulate.y = _wave1.a * sin(_wave1.f * (vs_out.WorldPos.x - _Time * _wave1.s));
 	//undulate.x = _wave1.a * cos(_wave1.f * (vs_out.WorldPos.x - _Time * _wave1.s));
 
-	vec3 _vPos = vec3(vs_out.WorldPos.x, 
+	vec3 _vPos = vec3(vs_out.WorldPos.x + _wave1.a * cos(f), 
 	_wave1.a * sin(f), 
 	vs_out.WorldPos.z);
 

@@ -5,10 +5,12 @@
 
 namespace jsc {
 	struct Wave {
-		float f, a, s;		// Frequency, Amplitude, Speed
+		float l, a, s;		// Wavelength, Amplitude, Speed
+		float alpha, blend;
 		ew::Vec3 clr;
 
-		Wave::Wave(float frequency, float amplitude, float speed, ew::Vec3 color);
+		Wave::Wave(float wavelength, float amplitude, float speed, ew::Vec3 color);
+		Wave::Wave(float wavelength, float amplitude, float speed, float _alpha, float lightBlend, ew::Vec3 color);
 	};
 
 }

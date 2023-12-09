@@ -83,6 +83,18 @@ namespace ew {
 		std::string fragmentShaderSource = ew::loadShaderSourceFromFile(fragmentShader.c_str());
 		m_id = ew::createShaderProgram(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
 	}
+	/// <summary>
+	/// Does the same thing as the constructor
+	/// </summary>
+	/// <param name="vertexShader"></param>
+	/// <param name="fragmentShader"></param>
+	void Shader::reload(const std::string& vertexShader, const std::string& fragmentShader) {
+		std::string vertexShaderSource = ew::loadShaderSourceFromFile(vertexShader.c_str());
+		std::string fragmentShaderSource = ew::loadShaderSourceFromFile(fragmentShader.c_str());
+		m_id = ew::createShaderProgram(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
+		printf("\nShader reloaded\n");
+	}
+
 	void Shader::use()const
 	{
 		glUseProgram(m_id);

@@ -36,12 +36,18 @@ float prevTime;
 //ew::Vec3 bgColor = ew::Vec3(0.1f);
 
 struct AppSettings {
-	const char* shadingModeNames[5] = { "Solid Color","Normals","UVs","Texture","Lit" };
-	int shadingModeIndex = 1;
+	const char* shaderTypeNames[2] = { "SimpleSin", "Gerstner"};
+	int waterShaderIndex = 1;
+	const char* vertPaths[2] = { "assets/simpleSin.vert", "assets/gerstner.vert" };
+	const char* fragPaths[2] = { "assets/simpleSin.frag", "assets/gerstner.frag" };
+
+	const char* shadingModeNames[4] = { "Solid Color","Normals","UVs","Texture"};
+	int shadingModeIndex = 0;
 
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
 
+	bool lit = true;
 	bool wireframe = true;
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
@@ -86,10 +92,10 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 // Objects & Shaders ----------------------------------------------------*/
-	ew::Shader shader("assets/water.vert", "assets/water.frag"); // First shader
+	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // First shader
 	ew::Shader unlitShader("assets/unlit.vert", "assets/unlit.frag");
 
-	jsc::Wave wave1(1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
+	jsc::Wave wave1(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -100,9 +106,13 @@ int main() {
 	//	lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
 	//}
 
-	jsc::Light lights[1];
+	jsc::Light lights[4];
 	lights[0].transform.position = { 0,0,0 };
 	lights[0].clr = { 1,1,0 };
+	for (int i = 1; i < numLights; i++) {
+		lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i < 2) - 1) };
+		lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
+	}
 
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 
@@ -148,20 +158,22 @@ int main() {
 // Uniforms & Draw ------------------------------------------------------*/
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
+
+		// 
+		//setWave(shader, wave1);
+		shader.setFloat("_wave1.l", wave1.l);
+		shader.setFloat("_wave1.a", wave1.a);
+		shader.setFloat("_wave1.s", wave1.s);
+		shader.setFloat("alpha", wave1.alpha);
+		shader.setFloat("blend", wave1.blend);
+		shader.setVec3("_wave1.clr", wave1.clr);
+
 		shader.setInt("_Texture", 0);
 
 		shader.setInt("_Mode", appSettings.shadingModeIndex);
-		shader.setVec3("_UnshadedColor", wave1.clr);
-
 		shader.setFloat("_Time", (float)glfwGetTime());
+		shader.setVec3("_UnshadedColor", wave1.clr);
 		
-		//shader.setWave("_wave1", wave1);
-		shader.setFloat("_wave1.f", wave1.f);
-		shader.setFloat("_wave1.a", wave1.a);
-		shader.setFloat("_wave1.s", wave1.s);
-		shader.setVec3("_wave1.clr", wave1.clr);
-
-
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		shader.setMaterial("_Material", mat);
 		shader.setVec3("_ViewPos", camera.position);
@@ -173,7 +185,7 @@ int main() {
 			shader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
 		}
 
-		//Draw shapes
+		// Draw shapes
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
@@ -203,17 +215,33 @@ int main() {
 
 			ImGui::Begin("Settings");
 
+			// Change the shader
+			if (ImGui::Checkbox("Lit", &appSettings.lit)){
+				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex],
+					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
+			}
+			if (ImGui::Combo("Shader Select", &appSettings.waterShaderIndex, appSettings.shaderTypeNames, IM_ARRAYSIZE(appSettings.shaderTypeNames))) {
+				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex], 
+					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
+			}
+			
+
+
 			// Wave Settings
-			if (ImGui::CollapsingHeader("Wave")) {
-				ImGui::DragFloat("Frequency", &wave1.f, 0.01f, 0, 10);
+			if (ImGui::CollapsingHeader("Wave Properties")) {
+				ImGui::DragFloat("Wavelength", &wave1.l, 0.01f, 0, 10);
 				ImGui::DragFloat("Amplitude", &wave1.a, 0.01f, 0, 10);
 				ImGui::DragFloat("Speed", &wave1.s, 0.01f, 0, 10);
+				ImGui::DragFloat("Alpha", &wave1.alpha, 0.01f, 0, 10);
+				ImGui::DragFloat("Blend", &wave1.blend, 0.01f, 0, 10);
 				ImGui::ColorPicker3("Colour", &wave1.clr.x);
 			}
 
 
 			// View Modes
-			ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
+			if (!appSettings.lit) {
+				ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
+			}
 			ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
 			if (ImGui::Checkbox("Wireframe", &appSettings.wireframe)) {
 				glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
@@ -311,3 +339,14 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 }
 
 
+/// <summary>
+/// Sets all relevant uniforms
+/// </summary>
+void setWave(ew::Shader& shader, jsc::Wave wave) {
+	shader.setFloat("_wave1.f", wave.l);
+	shader.setFloat("_wave1.a", wave.a);
+	shader.setFloat("_wave1.s", wave.s);
+	shader.setFloat("alpha", wave.alpha);
+	shader.setFloat("blend", wave.blend);
+	shader.setVec3("_wave1.clr", wave.clr);
+}
