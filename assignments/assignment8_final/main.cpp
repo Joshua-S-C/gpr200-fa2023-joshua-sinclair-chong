@@ -116,6 +116,8 @@ int main() {
 
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.5 }, ew::Vec3{ .5f,.8f,1 });
+	gerstnerWave.alpha = 1;
+	gerstnerWave.blend = 1;
 
 	jsc::GWave gWaves[MAX_WAVES]
 		= { gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave};
@@ -288,11 +290,15 @@ int main() {
 					break;
 				case 1:
 					if (ImGui::CollapsingHeader("Gerstner Wave Properties")) {
+						ImGui::DragFloat("Alpha", &gWaves[0].alpha, 0.01f, 0, 10);
+						ImGui::DragFloat("Blend", &gWaves[0].blend, 0.01f, 0, 10);
+
 						for (int i = 0; i < numWaves; i++) {
 							ImGui::PushID(i);
 							ImGui::DragFloat("Wavelength", &gWaves[i].l, 0.01f, 0, 10);
 							ImGui::DragFloat("Steepness", &gWaves[i].s, 0.01f, 0, 10);
 							ImGui::DragFloat2("Direction", &gWaves[i].dir.x, 0.01f, 0, 10);
+
 							//ImGui::ColorEdit3("Colour", &gWaves[i].clr.x);
 							ImGui::PopID();
 						}
@@ -409,8 +415,6 @@ void setWave(ew::Shader& shader, jsc::GWave wave, std::string name) {
 	shader.setFloat(name + ".l", wave.l);
 	shader.setFloat(name + ".s", wave.s);
 	shader.setVec2(name + ".dir", wave.dir);
-	shader.setFloat("alpha", wave.alpha);
-	shader.setFloat("blend", wave.blend);
 	shader.setVec3(name + ".clr", wave.clr);
 }
 
@@ -427,6 +431,8 @@ void setWaves(ew::Shader& shader, jsc::Wave wave[], int numWaves, std::string na
 /// Set array of Gerstner waves.
 /// </summary>
 void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string name) {
+	shader.setFloat("alpha", wave[0].alpha);
+	shader.setFloat("blend", wave[0].blend);
 	for (int i = 0; i < numWaves; i++) {
 		setWave(shader, wave[i], name + "[" + std::to_string(i) + "]");
 	}

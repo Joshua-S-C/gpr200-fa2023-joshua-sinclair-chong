@@ -57,7 +57,7 @@ vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binorma
 
 void main(){
 	vs_out.UV = vUV;
-	vs_out.WaveClr = _wave.clr; // Uneeded
+	vs_out.WaveClr = _waves[0].clr; // Uneeded
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 
 	vec3 tangent = {1, 0, 0};	//

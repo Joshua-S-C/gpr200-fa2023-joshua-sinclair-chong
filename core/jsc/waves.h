@@ -33,7 +33,8 @@ namespace jsc {
 	struct GWave {
 		float l, s;	
 		ew::Vec2 dir;
-		float alpha, blend;
+		float alpha = 1;
+		float blend = 1;
 		ew::Vec3 clr;
 
 		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color);

@@ -63,8 +63,8 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
-	//FragColor = vec4(fs_in.WaveClr, alpha) * vec4(result, blend);
-	FragColor = vec4(fs_in.WaveClr * result, 1.0);
+	FragColor = vec4(fs_in.WaveClr, alpha) * vec4(result, blend);
+	//FragColor = vec4(fs_in.WaveClr * result, 1.0);
 	//FragColor = vec4(fs_in.WaveClr, alpha) + vec4(result, blend);
 	//FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
 }
