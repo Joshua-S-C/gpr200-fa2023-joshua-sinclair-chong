@@ -211,7 +211,6 @@ int main() {
 
 		// Render Waves
 		shader.use();
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		
 		switch (appSettings.waterShaderIndex) {
 			case 0:
@@ -224,7 +223,11 @@ int main() {
 				break;
 		}
 
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		shader.setInt("_Texture", 0);
+
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture);
+		shader.setInt("_Skybox", 0);
 
 		shader.setInt("_Mode", appSettings.shadingModeIndex);
 		shader.setFloat("_Time", (float)glfwGetTime());

@@ -30,6 +30,7 @@ uniform Light _Lights[MAX_LIGHTS];
 uniform Material _Material;
 
 uniform vec3 _ViewPos;
+uniform samplerCube _Skybox;
 uniform bool _Phong;
 uniform int _NumLights;
 
@@ -63,8 +64,13 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
+	vec3 viewDir = normalize(_ViewPos - fs_in.WorldPos);
+	vec3 skyboxReflect = reflect(viewDir, normalize(fs_in.WorldNorm));
+
 	FragColor = vec4(fs_in.WaveClr, alpha) * vec4(result, blend);
 	//FragColor = vec4(fs_in.WaveClr * result, 1.0);
 	//FragColor = vec4(fs_in.WaveClr, alpha) + vec4(result, blend);
 	//FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+	//FragColor = texture(_Skybox,fs_in.WorldPos) * vec4(result, 1.0);
+	FragColor *= vec4(texture(_Skybox,skyboxReflect).rbg, blend);
 }
