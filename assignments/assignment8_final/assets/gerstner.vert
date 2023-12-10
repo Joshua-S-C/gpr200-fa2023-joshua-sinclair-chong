@@ -20,8 +20,6 @@ struct Wave {
 	float l, s;
 	vec2 dir;
 	vec3 clr;
-	// Not passed in by uniform below
-	//float k, f, a;
 };
 
 uniform Wave _wave;
@@ -35,7 +33,7 @@ void main(){
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	
 	// Used in Calcs --------------------------------------------------------*/
-	float k = 2 * radians(180) / _wave.l;				
+	float k = 2 * radians(180) / _wave.l;				// Wave Number
 	float c = sqrt(9.8 / k);							// Speed
 	vec2 d = normalize(_wave.dir);						// Direction normalized
 	float f = k * (dot(d, vPos.xz) - _Time * _wave.s);	// Frequency

@@ -101,19 +101,18 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);	// TODO Will need to be changed for the skybox
 	glEnable(GL_DEPTH_TEST);
-	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 
 // Initializations ------------------------------------------------------*/
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
-	unsigned int brickTexture2 = ew::loadTexture("assets/skybox/back.jpg",GL_REPEAT,GL_LINEAR);
 	// this is just here lol incase i want to look at lovely bricks
 
 	// Waves
 	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	jsc::GWave gerstnerWave(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
-	jsc::Material mat(.05, .2, .7, 32);
+	jsc::Material mat(.2, .3, .7, 32);
 	
 	int planeSubdivs = 50;
 	float planeSize = 10.0f;
@@ -135,9 +134,6 @@ int main() {
 	// Skybox
 	jsc::Skybox skybox;
 	ew::Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
-	//unsigned int skyboxTexture = ew::loadTexture("assets/skybox_texture.jpg",GL_REPEAT,GL_LINEAR);
-	//ew::Mesh skyboxMesh(ew::createCube(100.0f));
-	//ew::Transform skyboxTransform;
 
 	// Other objects
 	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
@@ -149,7 +145,6 @@ int main() {
 	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 
 	resetCamera(camera,cameraController);
-
 
 // Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
@@ -175,8 +170,10 @@ int main() {
 		// Render Skybox
 		glCullFace(GL_FRONT);
 		glDepthMask(GL_FALSE);
+
 		skyboxShader.use();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture);
+
 		skyboxShader.setInt("_Texture", 0);
 		skyboxShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		skyboxShader.setMat4("_Model", skybox.transform.getModelMatrix());
@@ -185,11 +182,21 @@ int main() {
 		
 		glCullFace(GL_BACK);
 		glDepthMask(GL_TRUE);
-
+		
+		// Render point lights
+		if (appSettings.renderLights) {
+			lightsShader.use();
+			lightsShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+			for (int i = 0; i < numLights; i++) {
+				lightsShader.setMat4("_Model", lights[i].transform.getModelMatrix());
+				lightsShader.setVec3("_Color", lights[i].clr);
+				lightMesh.draw();
+			}
+		}
 
 		// Render Waves
 		shader.use();
-		glBindTexture(GL_TEXTURE_2D, brickTexture2);
+		glBindTexture(GL_TEXTURE_2D, brickTexture);
 		
 		switch (appSettings.waterShaderIndex) {
 			case 0:
@@ -217,25 +224,11 @@ int main() {
 			shader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
 		}
 
-		// Draw shapes
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
-
-		// Render point lights
-		if (appSettings.renderLights) {
-			lightsShader.use();
-			lightsShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-			for (int i = 0; i < numLights; i++) {
-				lightsShader.setMat4("_Model", lights[i].transform.getModelMatrix());
-				lightsShader.setVec3("_Color", lights[i].clr);
-				lightMesh.draw();
-			}
-		}
-
 		
-
-
+		
 		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
 		//sphereMesh.draw();
 		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
@@ -249,7 +242,7 @@ int main() {
 
 			ImGui::SetNextWindowPos({ 0,0 });
 			ImGui::SetNextWindowSize({ 300, (float)SCREEN_HEIGHT });
-			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
+			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 
 			ImGui::Text(std::to_string(timePerFrame).c_str());
 
