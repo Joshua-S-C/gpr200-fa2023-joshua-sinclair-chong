@@ -25,7 +25,7 @@
 #define MAX_LIGHTS 4
 #define MAX_WAVES 10
 //int numLights = MAX_LIGHTS;
-int numLights = 1;
+int numLights = 2;
 int numWaves;
 
 int numFrames = 0;
@@ -39,8 +39,9 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 void setWave(ew::Shader& shader, jsc::Wave wave, std::string name = "_wave");
 void setWave(ew::Shader& shader, jsc::GWave wave, std::string name = "_wave");
-void setWaves(ew::Shader& shader, jsc::Wave wave, int numWaves, std::string name = "_wave");
-void setWaves(ew::Shader& shader, jsc::GWave wave, int numWaves, std::string name = "_wave");
+void setWaves(ew::Shader& shader, jsc::Wave wave[], int numWaves, std::string name = "_waves");
+void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string name = "_waves");
+jsc::GWave deriveWave(jsc::GWave wave);
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time);
 
 struct AppSettings {
@@ -70,15 +71,17 @@ struct AppSettings {
 ew::Camera camera;
 ew::CameraController cameraController;
 
+
+
 int main() {
 // Initialize -----------------------------------------------------------*/
-	printf("Initializing...");
+	printf("Initializing...\n");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
 		return 1;
 	}
 
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Final", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Later Undulater!", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -99,7 +102,7 @@ int main() {
 
 	//Global settings
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);	// TODO Will need to be changed for the skybox
+	glCullFace(GL_BACK);	// Changed for skybox
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
@@ -110,12 +113,23 @@ int main() {
 
 	// Waves
 	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
+	jsc::Material mat(.2, .3, .7, 32);	// Material for waves
+
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	jsc::GWave gerstnerWave(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
-	jsc::Material mat(.2, .3, .7, 32);
+	jsc::GWave gerstnerWave2(0.5f, 0.1f, ew::Vec2{ 0.3, 0.6 }, ew::Vec3{ .5f,.8f,1 });
+
+	jsc::GWave gWaves[MAX_WAVES]
+		= { gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave};
+
+	jsc::GWave derived(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
+	for (int i = 0; i < MAX_WAVES; i++) {
+		gWaves[i] = derived;
+		derived = deriveWave(derived);
+	}
 	
-	int planeSubdivs = 50;
-	float planeSize = 10.0f;
+	int planeSubdivs = 100;
+	float planeSize = 20.0f;
 	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
 	ew::Transform planeTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
@@ -180,10 +194,11 @@ int main() {
 		skybox.UpdatePosition(camera.position);
 		skybox.mesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
+		// 
 		glCullFace(GL_BACK);
 		glDepthMask(GL_TRUE);
 		
-		// Render point lights
+		// Render Point Lights
 		if (appSettings.renderLights) {
 			lightsShader.use();
 			lightsShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
@@ -204,6 +219,7 @@ int main() {
 				break;
 			case 1:
 				setWave(shader, gerstnerWave);
+				setWaves(shader, gWaves, 2);
 				break;
 		}
 
@@ -325,12 +341,12 @@ int main() {
 
 			// Plane Properties
 			if (ImGui::CollapsingHeader("Mesh")) {
-				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100)) {
+				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 1000)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
 
-				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 10)) {
+				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 100)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
@@ -423,19 +439,24 @@ void setWave(ew::Shader& shader, jsc::GWave wave, std::string name) {
 /// <summary>
 /// Set array of Simple Waves.
 /// </summary>
-void setWaves(ew::Shader& shader, jsc::Wave wave, int numWaves, std::string name) {
+void setWaves(ew::Shader& shader, jsc::Wave wave[], int numWaves, std::string name) {
 	for (int i = 0; i < numWaves; i++) {
-		setWave(shader, wave, name + "[" + std::to_string(i) + "]");
+		setWave(shader, wave[i], name + "[" + std::to_string(i) + "]");
 	}
 }
 
 /// <summary>
 /// Set array of Gerstner waves.
 /// </summary>
-void setWaves(ew::Shader& shader, jsc::GWave wave, int numWaves, std::string name) {
+void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string name) {
 	for (int i = 0; i < numWaves; i++) {
-		setWave(shader, wave, name + "[" + std::to_string(i) + "]");
+		setWave(shader, wave[i], name + "[" + std::to_string(i) + "]");
 	}
+}
+
+jsc::GWave deriveWave(jsc::GWave wave) {
+	jsc::GWave derived(wave.l * 2, wave.s / 3, wave.dir, wave.clr);
+	return derived;
 }
 
 /// <summary>

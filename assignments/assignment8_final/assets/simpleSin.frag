@@ -33,6 +33,7 @@ uniform vec3 _ViewPos;
 uniform bool _Phong;
 uniform int _NumLights;
 
+
 void main(){
 	// Lit Shading ----------------------------------------------------------*/
 	vec3 normal = normalize(fs_in.WorldNorm);
