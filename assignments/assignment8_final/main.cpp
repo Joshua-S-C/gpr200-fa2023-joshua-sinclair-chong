@@ -27,6 +27,7 @@
 //int numLights = MAX_LIGHTS;
 int numLights = 2;
 int numWaves;
+int selectedWave = 0;
 
 int numFrames = 0;
 float timePerFrame = 0;
@@ -218,8 +219,9 @@ int main() {
 				setWave(shader, simpleWave);
 				break;
 			case 1:
+				shader.setInt("_SelectedWave", selectedWave);
 				setWave(shader, gerstnerWave);
-				setWaves(shader, gWaves, 2);
+				setWaves(shader, gWaves, MAX_WAVES);
 				break;
 		}
 
@@ -260,12 +262,13 @@ int main() {
 			ImGui::SetNextWindowSize({ 300, (float)SCREEN_HEIGHT });
 			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 
-			ImGui::Text(std::to_string(timePerFrame).c_str());
 
 			// Debug Text
 			bool debug;
 			ImGui::Checkbox("Debug List", &debug);
 			if (debug) {
+				ImGui::SliderInt("Selected Wave", &selectedWave, 0, MAX_WAVES);
+				ImGui::Text(std::to_string(timePerFrame).c_str());
 				ImGui::Text(std::to_string(appSettings.lit).c_str());
 			}
 
@@ -455,7 +458,7 @@ void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string n
 }
 
 jsc::GWave deriveWave(jsc::GWave wave) {
-	jsc::GWave derived(wave.l * 2, wave.s / 3, wave.dir, wave.clr);
+	jsc::GWave derived(wave.l / 2, wave.s / 3, wave.dir + ew::Vec2(0.3, 0.8), wave.clr);
 	return derived;
 }
 

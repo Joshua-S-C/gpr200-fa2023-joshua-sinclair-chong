@@ -23,6 +23,7 @@ struct Wave {
 
 uniform Wave _wave;
 uniform Wave _waves[10];
+uniform int _SelectedWave;
 
 vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binormal) {
 	// Used in Calcs --------------------------------------------------------*/
@@ -89,12 +90,13 @@ void main(){
 	vec3 binormal = {0, 0, 1};
 	vec3 undulate = {0,0,0};
 
-	undulate += gerstner(_waves[0], vPos, tangent, binormal);
+//	undulate += gerstner(_waves[_SelectedWave], vPos, tangent, binormal);
+//	undulate += gerstner(_wave, vPos, tangent, binormal);
 
 
-//	for(int i = 0; i < 5; i++){
-//		undulate += gerstner(_waves[i], vPos, tangent, binormal);
-//		}
+	for(int i = 0; i < _SelectedWave; i++){
+		undulate += gerstner(_waves[i], vPos, tangent, binormal);
+		}
 
 
 	vs_out.WorldNorm = normalize(cross(binormal, tangent));
