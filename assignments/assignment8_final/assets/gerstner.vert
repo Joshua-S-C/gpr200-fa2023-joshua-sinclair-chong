@@ -34,12 +34,12 @@ void main(){
 	vs_out.WaveClr = _wave.clr;
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	
-	// For other calcs
-	float k = 2 * radians(180) / _wave.l;
-	float c = sqrt(9.8 / k); //Speed
-	vec2 d = normalize(_wave.dir);
-	float f = k * (dot(d, vPos.xz) - _Time * _wave.s);
-	float a = _wave.s / k;
+	// Used in Calcs --------------------------------------------------------*/
+	float k = 2 * radians(180) / _wave.l;				
+	float c = sqrt(9.8 / k);							// Speed
+	vec2 d = normalize(_wave.dir);						// Direction normalized
+	float f = k * (dot(d, vPos.xz) - _Time * _wave.s);	// Frequency
+	float a = _wave.s / k;								// Amplitude
 
 	// Normal Calc ----------------------------------------------------------*/
 	vec3 tangent = vec3(
@@ -57,10 +57,17 @@ void main(){
 	vs_out.WorldNorm = normalize(cross(binormal, tangent));
 
 	// Undulation -----------------------------------------------------------*/
+	vec3 undulate = vec3(
+		d.x * (a * cos(f)), 
+		a * sin(f), 
+		d.y * (a * (cos(f)))
+		);
+
 	vec3 _vPos = vec3(
-	vs_out.WorldPos.x + d.x * (a * cos(f)), 
-	a * sin(f), 
-	vs_out.WorldPos.z + d.y * (a * (cos(f))));
+		vs_out.WorldPos.x + undulate.x, 
+		undulate.y, 
+		vs_out.WorldPos.z + undulate.z
+		);
 
 
 	gl_Position = _ViewProjection * _Model * vec4(_vPos,1.0);

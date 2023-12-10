@@ -40,5 +40,38 @@ namespace ew {
 		stbi_image_free(data);
 		return texture;
 	}
+
+	// Added
+	unsigned int loadCubemap(const char* faces[]) {
+		int width, height, numComponents;
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+
+		for (unsigned int i = 0; i < 6; i++) {
+			unsigned char* data = stbi_load(faces[i], &width, &height, &numComponents, 0);
+			if (data == NULL) {
+				printf("Failed to load image %s", faces[i]);
+				stbi_image_free(data);
+				return 0;
+			}
+
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+				0, getTextureFormat(numComponents), width, height, 
+				0, getTextureFormat(numComponents), GL_UNSIGNED_BYTE, data);
+
+			stbi_image_free(data);
+		}
+
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		printf("Loaded CubeMap\n");
+		return texture;
+	}
+
 }
 

@@ -105,19 +105,24 @@ int main() {
 	glEnable(GL_BLEND);
 
 // Initializations ------------------------------------------------------*/
-	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
-	
-	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
+	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
+	unsigned int brickTexture2 = ew::loadTexture("assets/skybox/back.jpg",GL_REPEAT,GL_LINEAR);
+	// this is just here lol incase i want to look at lovely bricks
 
+	// Waves
+	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
 	jsc::GWave gerstnerWave(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
+	jsc::Material mat(.05, .2, .7, 32);
 	
-	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
-
-	// Material
-	jsc::Material mat;
-
+	int planeSubdivs = 50;
+	float planeSize = 10.0f;
+	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
+	ew::Transform planeTransform;
+	planeTransform.position = ew::Vec3(0, -1.0, 0);
+	
 	// Lights
+	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 	jsc::Light lights[4];
 	lights[0].transform.position = { 0,0,0 };
@@ -127,18 +132,16 @@ int main() {
 		lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
 	}
 
-	// Objects
-	int planeSubdivs = 50;
-	float planeSize = 10.0f;
-	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
-	ew::Transform planeTransform;
-	planeTransform.position = ew::Vec3(0, -1.0, 0);
+	// Skybox
+	jsc::Skybox skybox;
+	ew::Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
+	//unsigned int skyboxTexture = ew::loadTexture("assets/skybox_texture.jpg",GL_REPEAT,GL_LINEAR);
+	//ew::Mesh skyboxMesh(ew::createCube(100.0f));
+	//ew::Transform skyboxTransform;
 
 	// Other objects
-	//ew::Mesh cubeMesh(ew::createCube(1.0f));
 	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
-	//ew::Transform cubeTransform;
 	//ew::Transform sphereTransform;
 	//ew::Transform cylinderTransform;
 	//ew::Transform torusTransform;
@@ -146,6 +149,7 @@ int main() {
 	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 
 	resetCamera(camera,cameraController);
+
 
 // Render Loop ----------------------------------------------------------*/
 	while (!glfwWindowShouldClose(window)) {
@@ -168,8 +172,24 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 // Uniforms & Draw ------------------------------------------------------*/
+		// Render Skybox
+		glCullFace(GL_FRONT);
+		glDepthMask(GL_FALSE);
+		skyboxShader.use();
+		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture);
+		skyboxShader.setInt("_Texture", 0);
+		skyboxShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+		skyboxShader.setMat4("_Model", skybox.transform.getModelMatrix());
+		skybox.UpdatePosition(camera.position);
+		skybox.mesh.draw((ew::DrawMode)appSettings.drawAsPoints);
+		
+		glCullFace(GL_BACK);
+		glDepthMask(GL_TRUE);
+
+
+		// Render Waves
 		shader.use();
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		glBindTexture(GL_TEXTURE_2D, brickTexture2);
 		
 		switch (appSettings.waterShaderIndex) {
 			case 0:
@@ -201,12 +221,6 @@ int main() {
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
-		//shader.setMat4("_Model", cubeTransform.getModelMatrix());
-		//cubeMesh.draw();
-		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		//sphereMesh.draw();
-		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		//cylinderMesh.draw();
 
 		// Render point lights
 		if (appSettings.renderLights) {
@@ -218,6 +232,14 @@ int main() {
 				lightMesh.draw();
 			}
 		}
+
+		
+
+
+		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
+		//sphereMesh.draw();
+		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
+		//cylinderMesh.draw();
 
 // Render UI ------------------------------------------------------------*/
 		{
