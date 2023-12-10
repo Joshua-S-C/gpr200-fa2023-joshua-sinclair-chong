@@ -42,11 +42,19 @@ void main(){
 	float a = _wave.s / k;
 
 	// Normal Calc ----------------------------------------------------------*/
-	vec3 tangent = normalize(vec3(
-		1 - _wave.s * sin(f), 
-		_wave.s * cos(f), 
-		0));
-	vs_out.WorldNorm = vec3(-tangent.y, tangent.x, 0);
+	vec3 tangent = vec3(
+		1 - d.x * d.x * (_wave.s * sin(f)), 
+		d.x * (_wave.s * cos(f)), 
+		-d.x * d.y * (_wave.s * sin(f))
+		);
+
+	vec3 binormal = vec3(
+		-d.x * d.y * (_wave.s * sin(f)),
+		d.y * (_wave.s * cos(f)),
+		1 - d.y * d.y * (_wave.s * sin(f))
+		);
+
+	vs_out.WorldNorm = normalize(cross(binormal, tangent));
 
 	// Undulation -----------------------------------------------------------*/
 	vec3 _vPos = vec3(

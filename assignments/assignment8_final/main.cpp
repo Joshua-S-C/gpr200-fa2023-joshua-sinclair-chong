@@ -262,7 +262,7 @@ int main() {
 					}
 					break;
 				case 1:
-					if (ImGui::CollapsingHeader("G Wave Properties")) {
+					if (ImGui::CollapsingHeader("Gerstner Wave Properties")) {
 						ImGui::DragFloat("Wavelength", &gerstnerWave.l, 0.01f, 0, 10);
 						ImGui::DragFloat("Steepness", &gerstnerWave.s, 0.01f, 0, 10);
 						ImGui::DragFloat2("Direction", &gerstnerWave.dir.x, 0.01f, 0, 10);
