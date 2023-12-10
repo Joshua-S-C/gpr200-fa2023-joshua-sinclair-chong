@@ -4,8 +4,14 @@
 
 
 namespace jsc {
+	/// <summary>
+	/// Simple waves for use with simpleSin.vert/frag
+	/// </summary>
+	/// <param name="l">Wavelength</param>
+	/// <param name="a">Amplitude</param>
+	/// <param name="s">Speed</param>
 	struct Wave {
-		float l, a, s;		// Wavelength, Amplitude, Speed
+		float l, a, s;
 		float alpha, blend;
 		ew::Vec3 clr;
 
@@ -13,4 +19,19 @@ namespace jsc {
 		Wave::Wave(float wavelength, float amplitude, float speed, float _alpha, float lightBlend, ew::Vec3 color);
 	};
 
+	/// <summary>
+	/// Gerstner Waves. 
+	/// </summary>
+	/// <param name="l">Wavelength</param>
+	/// <param name="s">Steepness</param>
+	/// <param name="dir">Direction wave is traveling in</param>
+	struct GWave {
+		float l, s;	
+		ew::Vec2 dir;
+		float alpha, blend;
+		ew::Vec3 clr;
+
+		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color);
+		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color, float _alpha, float lightBlend);
+	};
 }

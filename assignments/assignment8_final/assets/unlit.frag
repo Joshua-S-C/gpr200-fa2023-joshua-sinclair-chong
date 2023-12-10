@@ -14,6 +14,7 @@ in Surface{
 	vec2 UV;
 	vec3 WorldPos;
 	vec3 WorldNorm;
+	vec3 WaveClr;
 }fs_in;
 
 void main(){

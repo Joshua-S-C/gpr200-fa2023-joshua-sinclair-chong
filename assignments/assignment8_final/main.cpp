@@ -23,27 +23,29 @@
 #include <jsc/waves.h>
 
 #define MAX_LIGHTS 4
+#define MAX_WAVES 10
 //int numLights = MAX_LIGHTS;
 int numLights = 1;
+int numWaves;
 
 int numFrames = 0;
 float timePerFrame = 0;
 
+int SCREEN_WIDTH = 1080;
+int SCREEN_HEIGHT = 720;
+float prevTime;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
-void setWave(ew::Shader& shader, jsc::Wave wave);
+void setWave(ew::Shader& shader, jsc::Wave wave, std::string name = "_wave");
+void setWave(ew::Shader& shader, jsc::GWave wave, std::string name = "_wave");
+void setWaves(ew::Shader& shader, jsc::Wave wave, int numWaves, std::string name = "_wave");
+void setWaves(ew::Shader& shader, jsc::GWave wave, int numWaves, std::string name = "_wave");
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time);
-
-int SCREEN_WIDTH = 1080;
-int SCREEN_HEIGHT = 720;
-
-float prevTime;
-//ew::Vec3 bgColor = ew::Vec3(0.1f);
 
 struct AppSettings {
 	const char* shaderTypeNames[2] = { "SimpleSin", "Gerstner"};
-	int waterShaderIndex = 1;
+	int waterShaderIndex = 0;
 	const char* vertPaths[2] = { "assets/simpleSin.vert", "assets/gerstner.vert" };
 	const char* fragPaths[2] = { "assets/simpleSin.frag", "assets/gerstner.frag" };
 
@@ -54,21 +56,19 @@ struct AppSettings {
 	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
 	
 	int blendModeIndex = 7;
-	int blendModes[20] = { GL_ZERO ,GL_ONE ,GL_SRC_COLOR ,GL_ONE_MINUS_SRC_COLOR ,GL_DST_COLOR ,GL_ONE_MINUS_DST_COLOR ,GL_SRC_ALPHA ,GL_ONE_MINUS_SRC_ALPHA ,GL_DST_ALPHA ,GL_ONE_MINUS_DST_ALPHA ,GL_CONSTANT_COLOR ,GL_ONE_MINUS_CONSTANT_COLOR ,GL_CONSTANT_ALPHA ,GL_ONE_MINUS_CONSTANT_ALPHA ,GL_SRC_ALPHA_SATURATE ,GL_SRC1_COLOR ,GL_ONE_MINUS_SRC1_COLOR ,GL_SRC1_ALPHA ,GL_ONE_MINUS_SRC1_ALPHA };
+	int blendModes[20] = 
+	{ GL_ZERO ,GL_ONE ,GL_SRC_COLOR ,GL_ONE_MINUS_SRC_COLOR ,GL_DST_COLOR ,GL_ONE_MINUS_DST_COLOR ,GL_SRC_ALPHA ,GL_ONE_MINUS_SRC_ALPHA ,GL_DST_ALPHA ,GL_ONE_MINUS_DST_ALPHA ,GL_CONSTANT_COLOR ,GL_ONE_MINUS_CONSTANT_COLOR ,GL_CONSTANT_ALPHA ,GL_ONE_MINUS_CONSTANT_ALPHA ,GL_SRC_ALPHA_SATURATE ,GL_SRC1_COLOR ,GL_ONE_MINUS_SRC1_COLOR ,GL_SRC1_ALPHA ,GL_ONE_MINUS_SRC1_ALPHA };
 
 	bool lit = true;
+	bool phong = false;
 	bool wireframe = true;
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
 	bool renderLights = true;
 }appSettings;
 
-
-
 ew::Camera camera;
 ew::CameraController cameraController;
-
-bool phong = false;
 
 int main() {
 // Initialize -----------------------------------------------------------*/
@@ -104,12 +104,13 @@ int main() {
 	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 	glEnable(GL_BLEND);
 
-// Objects & Shaders ----------------------------------------------------*/
+// Initializations ------------------------------------------------------*/
 	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
 	
 	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
 
-	jsc::Wave wave1(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
+	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
+	jsc::GWave gerstnerWave(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
 	
 	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
 
@@ -169,26 +170,26 @@ int main() {
 // Uniforms & Draw ------------------------------------------------------*/
 		shader.use();
 		glBindTexture(GL_TEXTURE_2D, brickTexture);
-
-		// 
-		setWave(shader, wave1);
-		//shader.setFloat("_wave1.l", wave1.l);
-		//shader.setFloat("_wave1.a", wave1.a);
-		//shader.setFloat("_wave1.s", wave1.s);
-		//shader.setFloat("alpha", wave1.alpha);
-		//shader.setFloat("blend", wave1.blend);
-		//shader.setVec3("_wave1.clr", wave1.clr);
+		
+		switch (appSettings.waterShaderIndex) {
+			case 0:
+				setWave(shader, simpleWave);
+				break;
+			case 1:
+				setWave(shader, gerstnerWave);
+				break;
+		}
 
 		shader.setInt("_Texture", 0);
 
 		shader.setInt("_Mode", appSettings.shadingModeIndex);
 		shader.setFloat("_Time", (float)glfwGetTime());
-		shader.setVec3("_UnshadedColor", wave1.clr);
+		shader.setVec3("_UnshadedColor", simpleWave.clr); //todo fix this
 		
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		shader.setMaterial("_Material", mat);
 		shader.setVec3("_ViewPos", camera.position);
-		shader.setBool("_Phong", phong);
+		shader.setBool("_Phong", appSettings.phong);
 		shader.setInt("_NumLights", numLights);
 
 		for (int i = 0; i < numLights; i++) {
@@ -224,11 +225,20 @@ int main() {
 			ImGui_ImplOpenGL3_NewFrame();
 			ImGui::NewFrame();
 
-			ImGui::Begin("Settings");
+			ImGui::SetNextWindowPos({ 0,0 });
+			ImGui::SetNextWindowSize({ 300, (float)SCREEN_HEIGHT });
+			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
 
 			ImGui::Text(std::to_string(timePerFrame).c_str());
 
-			// Change the shader
+			// Debug Text
+			bool debug;
+			ImGui::Checkbox("Debug List", &debug);
+			if (debug) {
+				ImGui::Text(std::to_string(appSettings.lit).c_str());
+			}
+
+			// Change which shader is in use
 			if (ImGui::Checkbox("Lit", &appSettings.lit)){
 				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex],
 					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
@@ -240,48 +250,66 @@ int main() {
 
 
 			// Wave Settings
-			if (ImGui::CollapsingHeader("Wave Properties")) {
-				ImGui::DragFloat("Wavelength", &wave1.l, 0.01f, 0, 10);
-				ImGui::DragFloat("Amplitude", &wave1.a, 0.01f, 0, 10);
-				ImGui::DragFloat("Speed", &wave1.s, 0.01f, 0, 10);
-				ImGui::DragFloat("Alpha", &wave1.alpha, 0.01f, 0, 10);
-				ImGui::DragFloat("Blend", &wave1.blend, 0.01f, 0, 10);
-				ImGui::ColorPicker3("Colour", &wave1.clr.x);
+			switch (appSettings.waterShaderIndex) {
+				case 0:
+					if (ImGui::CollapsingHeader("Simple Wave Properties")) {
+						ImGui::DragFloat("Wavelength", &simpleWave.l, 0.01f, 0, 10);
+						ImGui::DragFloat("Amplitude", &simpleWave.a, 0.01f, 0, 10);
+						ImGui::DragFloat("Speed", &simpleWave.s, 0.01f, 0, 10);
+						ImGui::DragFloat("Alpha", &simpleWave.alpha, 0.01f, 0, 10);
+						ImGui::DragFloat("Blend", &simpleWave.blend, 0.01f, 0, 10);
+						ImGui::ColorPicker3("Colour", &simpleWave.clr.x);
+					}
+					break;
+				case 1:
+					if (ImGui::CollapsingHeader("G Wave Properties")) {
+						ImGui::DragFloat("Wavelength", &gerstnerWave.l, 0.01f, 0, 10);
+						ImGui::DragFloat("Steepness", &gerstnerWave.s, 0.01f, 0, 10);
+						ImGui::DragFloat2("Direction", &gerstnerWave.dir.x, 0.01f, 0, 10);
+						//ImGui::DragFloat("Alpha", &simpleWave.alpha, 0.01f, 0, 10);
+						//ImGui::DragFloat("Blend", &simpleWave.blend, 0.01f, 0, 10);
+						ImGui::ColorPicker3("Colour", &gerstnerWave.clr.x);
+					}
+					break;
 			}
-
-
-			// View Modes
-			if (!appSettings.lit) {
-				ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
+				
+			// How It Renders
+			if (ImGui::CollapsingHeader("Render Properties")) {
+				// View Modes
+				if (!appSettings.lit) {
+					ImGui::Combo("Shading mode", &appSettings.shadingModeIndex, appSettings.shadingModeNames, IM_ARRAYSIZE(appSettings.shadingModeNames));
+				}
+				ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
+				if (ImGui::Checkbox("Wireframe", &appSettings.wireframe)) {
+					glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
+				}
+				if (ImGui::Checkbox("Back-face culling", &appSettings.backFaceCulling)) {
+					if (appSettings.backFaceCulling)
+						glEnable(GL_CULL_FACE);
+					else
+						glDisable(GL_CULL_FACE);
+				}
+				if (ImGui::SliderInt("Blend Mode", &appSettings.blendModeIndex, 0, 20))
+					glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 			}
-			ImGui::Checkbox("Draw as points", &appSettings.drawAsPoints);
-			if (ImGui::Checkbox("Wireframe", &appSettings.wireframe)) {
-				glPolygonMode(GL_FRONT_AND_BACK, appSettings.wireframe ? GL_LINE : GL_FILL);
-			}
-			if (ImGui::Checkbox("Back-face culling", &appSettings.backFaceCulling)) {
-				if (appSettings.backFaceCulling)
-					glEnable(GL_CULL_FACE);
-				else
-					glDisable(GL_CULL_FACE);
-			}
-			if (ImGui::SliderInt("Blend Mode", &appSettings.blendModeIndex, 0, 20))
-				glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 
 			// Lighting
-			ImGui::Checkbox("Render Lights", &appSettings.renderLights);
-			ImGui::Checkbox("Phong?", &phong);
-			ImGui::SliderInt("# of Lights", &numLights, 0, MAX_LIGHTS);
-			if (ImGui::CollapsingHeader("Lights")) {
-				for (int i = 0; i < numLights; i++) {
-					ImGui::PushID(i);
-					ImGui::DragFloat3("Position", &lights[i].transform.position.x, 0.1f);
-					ImGui::ColorEdit3("Colour", &lights[i].clr.x, 0.1f);
-					ImGui::PopID();
+			if (ImGui::CollapsingHeader("Lighting")) {
+				ImGui::Checkbox("Render Lights", &appSettings.renderLights);
+				ImGui::Checkbox("Phong?", &appSettings.phong);
+				ImGui::SliderInt("# of Lights", &numLights, 0, MAX_LIGHTS);
+				if (ImGui::CollapsingHeader("Lights")) {
+					for (int i = 0; i < numLights; i++) {
+						ImGui::PushID(i);
+						ImGui::DragFloat3("Position", &lights[i].transform.position.x, 0.1f);
+						ImGui::ColorEdit3("Colour", &lights[i].clr.x, 0.1f);
+						ImGui::PopID();
+					}
 				}
 			}
 
 			// Plane Properties
-			if (ImGui::CollapsingHeader("Plane Properties")) {
+			if (ImGui::CollapsingHeader("Mesh")) {
 				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 100)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
@@ -294,7 +322,7 @@ int main() {
 			}
 
 			// Material Properties
-			if (ImGui::CollapsingHeader("Material Properties")) {
+			if (ImGui::CollapsingHeader("Material")) {
 				ImGui::DragFloat("Ambient K", &mat.ambientK, 0.01f, 0, 1);
 				ImGui::DragFloat("Diffuse K", &mat.diffuseK, 0.01f, 0, 1);
 				ImGui::DragFloat("Specular K", &mat.specularK, 0.01f, 0, 1);
@@ -354,26 +382,56 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 
 
 /// <summary>
-/// Sets all relevant uniforms
+/// Simple waves. Sets all relevant uniforms 
 /// </summary>
-void setWave(ew::Shader& shader, jsc::Wave wave) {
-	shader.setFloat("_wave1.l", wave.l);
-	shader.setFloat("_wave1.a", wave.a);
-	shader.setFloat("_wave1.s", wave.s);
+void setWave(ew::Shader& shader, jsc::Wave wave, std::string name) {
+	shader.setFloat(name + ".l", wave.l);
+	shader.setFloat(name + ".a", wave.a);
+	shader.setFloat(name + ".s", wave.s);
 	shader.setFloat("alpha", wave.alpha);
 	shader.setFloat("blend", wave.blend);
-	shader.setVec3("_wave1.clr", wave.clr);
+	shader.setVec3(name + ".clr", wave.clr);
+}
+
+/// <summary>
+/// Gerstner wave. Sets all relevant uniforms
+/// </summary>
+void setWave(ew::Shader& shader, jsc::GWave wave, std::string name) {
+	shader.setFloat(name + ".l", wave.l);
+	shader.setFloat(name + ".s", wave.s);
+	shader.setVec2(name + ".dir", wave.dir);
+	shader.setFloat("alpha", wave.alpha);
+	shader.setFloat("blend", wave.blend);
+	shader.setVec3(name + ".clr", wave.clr);
+}
+
+/// <summary>
+/// Set array of Simple Waves.
+/// </summary>
+void setWaves(ew::Shader& shader, jsc::Wave wave, int numWaves, std::string name) {
+	for (int i = 0; i < numWaves; i++) {
+		setWave(shader, wave, name + "[" + std::to_string(i) + "]");
+	}
+}
+
+/// <summary>
+/// Set array of Gerstner waves.
+/// </summary>
+void setWaves(ew::Shader& shader, jsc::GWave wave, int numWaves, std::string name) {
+	for (int i = 0; i < numWaves; i++) {
+		setWave(shader, wave, name + "[" + std::to_string(i) + "]");
+	}
 }
 
 /// <summary>
 /// Calcs the number of ms between drawing frames
 /// </summary>
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time) {
-	printf(std::to_string(numFrames).c_str());
-	printf(std::to_string(lastTime).c_str());
-	printf(std::to_string(time).c_str());
-	printf(std::to_string(timePerFrame).c_str());
-	printf("\n");
+	//printf(std::to_string(numFrames).c_str());
+	//printf(std::to_string(lastTime).c_str());
+	//printf(std::to_string(time).c_str());
+	//printf(std::to_string(timePerFrame).c_str());
+	//printf("\n");
 	
 	numFrames++;
 
