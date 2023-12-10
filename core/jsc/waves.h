@@ -17,6 +17,11 @@ namespace jsc {
 
 		Wave::Wave(float wavelength, float amplitude, float speed, ew::Vec3 color);
 		Wave::Wave(float wavelength, float amplitude, float speed, float _alpha, float lightBlend, ew::Vec3 color);
+
+		/// <summary>
+		/// Creates a smaller wave from a given wave so I don't have to do it manually.
+		/// </summary>
+		Wave derive();
 	};
 
 	/// <summary>
@@ -33,5 +38,15 @@ namespace jsc {
 
 		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color);
 		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color, float _alpha, float lightBlend);
+
+		/// <summary>
+		/// Creates a smaller wave from a given wave so I don't have to do it manually.
+		/// </summary>
+		GWave derive();
+
+		/// <summary>
+		/// Fills array of GWaves with wave and derivatives
+		/// </summary>
+		void populate(GWave waves[], int numWaves);
 	};
 }

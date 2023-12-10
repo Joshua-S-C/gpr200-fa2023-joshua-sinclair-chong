@@ -24,7 +24,7 @@
 
 #define MAX_LIGHTS 4
 #define MAX_WAVES 10
-//int numLights = MAX_LIGHTS;
+
 int numLights = 2;
 int numWaves = 1;
 
@@ -35,13 +35,15 @@ int SCREEN_WIDTH = 1080;
 int SCREEN_HEIGHT = 720;
 float prevTime;
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
+// Wave Helper Functions
 void setWave(ew::Shader& shader, jsc::Wave wave, std::string name = "_wave");
 void setWave(ew::Shader& shader, jsc::GWave wave, std::string name = "_wave");
 void setWaves(ew::Shader& shader, jsc::Wave wave[], int numWaves, std::string name = "_waves");
 void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string name = "_waves");
-jsc::GWave deriveWave(jsc::GWave wave);
+
+// Other Helper Functions
+void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time);
 
 struct AppSettings {
@@ -71,10 +73,8 @@ struct AppSettings {
 ew::Camera camera;
 ew::CameraController cameraController;
 
-
-
 int main() {
-// Initialize -----------------------------------------------------------*/
+// Initialize Window and Stuf -------------------------------------------*/
 	printf("Initializing...\n");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -107,34 +107,29 @@ int main() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 
-// Initializations ------------------------------------------------------*/
-	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);
+// Initializations for Waves --------------------------------------------*/
+	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR); 
 	// this is just here lol incase i want to look at lovely bricks
 
-	// Waves
-	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag"); // Wave shader
-	jsc::Material mat(.2, .3, .7, 32);	// Material for waves
+	ew::Shader shader("assets/simpleSin.vert", "assets/simpleSin.frag");	// Wave shader
+	jsc::Material mat(.2, .3, .7, 32);										// Material for waves
 
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
-	jsc::GWave gerstnerWave(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
-	jsc::GWave gerstnerWave2(0.5f, 0.1f, ew::Vec2{ 0.3, 0.6 }, ew::Vec3{ .5f,.8f,1 });
+	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.5 }, ew::Vec3{ .5f,.8f,1 });
 
 	jsc::GWave gWaves[MAX_WAVES]
 		= { gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave, gerstnerWave};
 
-	jsc::GWave derived(2.0f, 0.3f, ew::Vec2{ 0.5, 0.5 }, ew::Vec3{ .5f,.8f,1 });
-	for (int i = 0; i < MAX_WAVES; i++) {
-		gWaves[i] = derived;
-		derived = deriveWave(derived);
-	}
-	
+	gerstnerWave.populate(gWaves, MAX_WAVES);
+
+	// Mesh
 	int planeSubdivs = 100;
 	float planeSize = 20.0f;
 	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
 	ew::Transform planeTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
-	
-	// Lights
+
+// Initializations for Lights -------------------------------------------*/
 	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 	jsc::Light lights[4];
@@ -145,11 +140,13 @@ int main() {
 		lights[i].clr = { (float)i / 4,1 - (float)i / 4,1 };
 	}
 
-	// Skybox
+// Initializations for Skybox -------------------------------------------*/
 	jsc::Skybox skybox;
 	ew::Shader skyboxShader("assets/skybox.vert", "assets/skybox.frag");
 
+
 	// Other objects
+
 	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
 	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
 	//ew::Transform sphereTransform;
@@ -158,9 +155,9 @@ int main() {
 	//sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
 	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
 
-	resetCamera(camera,cameraController);
 
 // Render Loop ----------------------------------------------------------*/
+	resetCamera(camera,cameraController);
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -191,10 +188,11 @@ int main() {
 		skyboxShader.setInt("_Texture", 0);
 		skyboxShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		skyboxShader.setMat4("_Model", skybox.transform.getModelMatrix());
+		
 		skybox.UpdatePosition(camera.position);
 		skybox.mesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
-		// 
+		// Reset GL settings after skybox
 		glCullFace(GL_BACK);
 		glDepthMask(GL_TRUE);
 		
@@ -205,7 +203,7 @@ int main() {
 			for (int i = 0; i < numLights; i++) {
 				lightsShader.setMat4("_Model", lights[i].transform.getModelMatrix());
 				lightsShader.setVec3("_Color", lights[i].clr);
-				lightMesh.draw();
+				lightMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 			}
 		}
 
@@ -231,8 +229,8 @@ int main() {
 		shader.setVec3("_UnshadedColor", simpleWave.clr); //todo fix this
 		
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-		shader.setMaterial("_Material", mat);
 		shader.setVec3("_ViewPos", camera.position);
+		shader.setMaterial("_Material", mat);
 		shader.setBool("_Phong", appSettings.phong);
 		shader.setInt("_NumLights", numLights);
 
@@ -243,13 +241,6 @@ int main() {
 
 		shader.setMat4("_Model", planeTransform.getModelMatrix());
 		planeMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
-
-		
-		
-		//shader.setMat4("_Model", sphereTransform.getModelMatrix());
-		//sphereMesh.draw();
-		//shader.setMat4("_Model", cylinderTransform.getModelMatrix());
-		//cylinderMesh.draw();
 
 // Render UI ------------------------------------------------------------*/
 		{
@@ -266,12 +257,14 @@ int main() {
 			bool debug;
 			ImGui::Checkbox("Debug List", &debug);
 			if (debug) {
-				ImGui::SliderInt("# of Waves", &numWaves, 0, MAX_WAVES);
 				ImGui::Text(std::to_string(timePerFrame).c_str());
 				ImGui::Text(std::to_string(appSettings.lit).c_str());
 			}
 
-			// Change which shader is in use
+			// Change # of Waves (duh.)
+			ImGui::SliderInt("# of Waves", &numWaves, 0, MAX_WAVES);
+
+			// Change Shader
 			if (ImGui::Checkbox("Lit", &appSettings.lit)){
 				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex],
 					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
@@ -280,7 +273,6 @@ int main() {
 				shader.reload(appSettings.vertPaths[appSettings.waterShaderIndex], 
 					appSettings.lit ? appSettings.fragPaths[appSettings.waterShaderIndex] : "assets/unlit.frag");
 			}
-
 
 			// Wave Settings
 			switch (appSettings.waterShaderIndex) {
@@ -395,26 +387,8 @@ int main() {
 	printf("Shutting down...");
 }
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-	SCREEN_WIDTH = width;
-	SCREEN_HEIGHT = height;
-}
 
-void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
-	camera.position = ew::Vec3(0, 0, 5);
-	camera.target = ew::Vec3(0);
-	camera.fov = 60.0f;
-	camera.orthoHeight = 6.0f;
-	camera.nearPlane = 0.1f;
-	camera.farPlane = 100.0f;
-	camera.orthographic = false;
-
-	cameraController.yaw = 0.0f;
-	cameraController.pitch = 0.0f;
-}
-
+/* Wave Helper Functions ------------------------------------------------*/
 
 /// <summary>
 /// Simple waves. Sets all relevant uniforms 
@@ -458,9 +432,26 @@ void setWaves(ew::Shader& shader, jsc::GWave wave[], int numWaves, std::string n
 	}
 }
 
-jsc::GWave deriveWave(jsc::GWave wave) {
-	jsc::GWave derived(wave.l / 2, wave.s / 3, wave.dir + ew::Vec2(0.3, 0.8), wave.clr);
-	return derived;
+// Other Helper Functions -----------------------------------------------*/
+
+void framebufferSizeCallback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+	SCREEN_WIDTH = width;
+	SCREEN_HEIGHT = height;
+}
+
+void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
+	camera.position = ew::Vec3(0, 0, 5);
+	camera.target = ew::Vec3(0);
+	camera.fov = 60.0f;
+	camera.orthoHeight = 6.0f;
+	camera.nearPlane = 0.1f;
+	camera.farPlane = 100.0f;
+	camera.orthographic = false;
+
+	cameraController.yaw = 0.0f;
+	cameraController.pitch = 0.0f;
 }
 
 /// <summary>

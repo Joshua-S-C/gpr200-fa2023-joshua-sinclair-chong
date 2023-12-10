@@ -18,6 +18,11 @@ namespace jsc {
 		clr = color;
 	}
 
+	Wave Wave::derive() {
+		jsc::Wave derived(l / 2, a / 3, s * 1.3, clr);
+		return derived;
+	}
+
 	GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color){
 		l = wavelength;
 		s = steepness;
@@ -34,9 +39,24 @@ namespace jsc {
 		clr = color;
 	}
 
+	GWave GWave::derive() {
+		jsc::GWave derived(l / 1.7, s / 3, dir + ew::Vec2(0.3, .2), clr);
+		return derived;
+	}
+
+	void GWave::populate(GWave waves[], int numWaves)
+	{
+		GWave derived(l, s, dir, clr);
+		for (int i = 0; i < numWaves; i++) {
+			waves[i] = derived;
+			derived = derived.derive();
+		}
+	}
+
 	// TODO: Wave presets maybe
 
-	// Moved to shader.cpp
+	// Moved to main.cpp
+	// TODO: Put in shader.cpp plz
 	//void setWave(ew::Shader* shader, const char* name, jsc::Wave){
 	//	shader->setFloat(name,wave.a);
 	//	shader->setFloat(name,wave.f);
