@@ -26,8 +26,7 @@
 #define MAX_WAVES 10
 //int numLights = MAX_LIGHTS;
 int numLights = 2;
-int numWaves;
-int selectedWave = 0;
+int numWaves = 1;
 
 int numFrames = 0;
 float timePerFrame = 0;
@@ -219,7 +218,7 @@ int main() {
 				setWave(shader, simpleWave);
 				break;
 			case 1:
-				shader.setInt("_SelectedWave", selectedWave);
+				shader.setInt("_NumWaves", numWaves);
 				setWave(shader, gerstnerWave);
 				setWaves(shader, gWaves, MAX_WAVES);
 				break;
@@ -267,7 +266,7 @@ int main() {
 			bool debug;
 			ImGui::Checkbox("Debug List", &debug);
 			if (debug) {
-				ImGui::SliderInt("Selected Wave", &selectedWave, 0, MAX_WAVES);
+				ImGui::SliderInt("# of Waves", &numWaves, 0, MAX_WAVES);
 				ImGui::Text(std::to_string(timePerFrame).c_str());
 				ImGui::Text(std::to_string(appSettings.lit).c_str());
 			}
@@ -297,12 +296,14 @@ int main() {
 					break;
 				case 1:
 					if (ImGui::CollapsingHeader("Gerstner Wave Properties")) {
-						ImGui::DragFloat("Wavelength", &gerstnerWave.l, 0.01f, 0, 10);
-						ImGui::DragFloat("Steepness", &gerstnerWave.s, 0.01f, 0, 10);
-						ImGui::DragFloat2("Direction", &gerstnerWave.dir.x, 0.01f, 0, 10);
-						//ImGui::DragFloat("Alpha", &simpleWave.alpha, 0.01f, 0, 10);
-						//ImGui::DragFloat("Blend", &simpleWave.blend, 0.01f, 0, 10);
-						ImGui::ColorPicker3("Colour", &gerstnerWave.clr.x);
+						for (int i = 0; i < numWaves; i++) {
+							ImGui::PushID(i);
+							ImGui::DragFloat("Wavelength", &gWaves[i].l, 0.01f, 0, 10);
+							ImGui::DragFloat("Steepness", &gWaves[i].s, 0.01f, 0, 10);
+							ImGui::DragFloat2("Direction", &gWaves[i].dir.x, 0.01f, 0, 10);
+							//ImGui::ColorEdit3("Colour", &gWaves[i].clr.x);
+							ImGui::PopID();
+						}
 					}
 					break;
 			}

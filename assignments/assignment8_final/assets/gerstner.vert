@@ -18,12 +18,13 @@ uniform vec3 _WorldNorm;
 struct Wave {
 	float l, s;
 	vec2 dir;
-	vec3 clr;
+	vec3 clr;	// I actually dont need this
+	// Maybe add a gravity variable
 };
 
 uniform Wave _wave;
 uniform Wave _waves[10];
-uniform int _SelectedWave;
+uniform int _NumWaves;
 
 vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binormal) {
 	// Used in Calcs --------------------------------------------------------*/
@@ -33,7 +34,7 @@ vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binorma
 	float f = k * (dot(d, vPos.xz) - _Time * _wave.s);	// Frequency
 	float a = _wave.s / k;								// Amplitude
 
-	// Normal Calc ----------------------------------------------------------*/
+	// Normals --------------------------------------------------------------*/
 	tangent += vec3(
 		1 - d.x * d.x * (_wave.s * sin(f)), 
 		d.x * (_wave.s * cos(f)), 
@@ -56,50 +57,19 @@ vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binorma
 
 void main(){
 	vs_out.UV = vUV;
-	vs_out.WaveClr = _wave.clr;
+	vs_out.WaveClr = _wave.clr; // Uneeded
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
-	
-	{
-	
-	// Used in Calcs --------------------------------------------------------*/
-//	float k = 2 * radians(180) / _wave.l;				// Wave Number
-//	float c = sqrt(9.8 / k);							// Speed
-//	vec2 d = normalize(_wave.dir);						// Direction normalized
-//	float f = k * (dot(d, vPos.xz) - _Time * _wave.s);	// Frequency
-//	float a = _wave.s / k;								// Amplitude
-//
-	// Normal Calc ----------------------------------------------------------*/
-//	vec3 tangent = vec3(
-//		1 - d.x * d.x * (_wave.s * sin(f)), 
-//		d.x * (_wave.s * cos(f)), 
-//		-d.x * d.y * (_wave.s * sin(f))
-//		);
-//
-//	vec3 binormal = vec3(
-//		-d.x * d.y * (_wave.s * sin(f)),
-//		d.y * (_wave.s * cos(f)),
-//		1 - d.y * d.y * (_wave.s * sin(f))
-//		);
-//
-//	vs_out.WorldNorm = normalize(cross(binormal, tangent));
-//	
-	}
-	// Undulation -----------------------------------------------------------*/
 
-	vec3 tangent = {1, 0, 0};
-	vec3 binormal = {0, 0, 1};
-	vec3 undulate = {0,0,0};
+	vec3 tangent = {1, 0, 0};	//
+	vec3 binormal = {0, 0, 1};	//
+	vec3 undulate = {0,0,0};	// Offset of verts
 
-//	undulate += gerstner(_waves[_SelectedWave], vPos, tangent, binormal);
-//	undulate += gerstner(_wave, vPos, tangent, binormal);
-
-
-	for(int i = 0; i < _SelectedWave; i++){
+	for(int i = 0; i < _NumWaves; i++){
 		undulate += gerstner(_waves[i], vPos, tangent, binormal);
-		}
-
+	}
 
 	vs_out.WorldNorm = normalize(cross(binormal, tangent));
+	
 	vec3 _vPos = vec3(
 		vs_out.WorldPos.x + undulate.x, 
 		undulate.y, 
