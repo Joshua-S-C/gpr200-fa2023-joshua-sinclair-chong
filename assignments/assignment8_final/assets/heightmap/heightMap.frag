@@ -60,5 +60,7 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
-	FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+	float height = ((fs_in.WorldPos.y + 32) / 100);
+	FragColor = vec4(0, 0, height, 1.0);
+	//FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
 }

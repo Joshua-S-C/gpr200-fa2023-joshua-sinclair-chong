@@ -240,7 +240,7 @@ namespace ew {
 	/// </summary>
 	/// <param name="filePath">Path to image</param>
 	/// <returns></returns>
-	MeshData createHeightmap(const char* filePath, float yScale, float yShift) {
+	MeshData createHeightmap(const char* filePath, float scale, float yScale, float yShift) {
 		int width, height, numComponents;
 		unsigned char* data = stbi_load(filePath, &width, &height, &numComponents, 0);
 		MeshData mesh;
@@ -261,8 +261,8 @@ namespace ew {
 				// Get height from texel
 				v.pos.y = (float)texel[0] * yScale - yShift;
 
-				v.pos.x = ( - height / 2.0f + row) / 10;
-				v.pos.z = ( - width / 2.0f + col) / 10;
+				v.pos.x = ( - height / 2.0f + row) * scale;
+				v.pos.z = ( - width / 2.0f + col) * scale;
 
 				//v.pos.x = -width / 2 + width * v.uv.x;
 				//v.pos.z = height / 2 - height * v.uv.y;

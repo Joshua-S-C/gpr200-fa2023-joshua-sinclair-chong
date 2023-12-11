@@ -361,6 +361,15 @@ int main() {
 					glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 			}
 
+			// Terrain
+			if (ImGui::CollapsingHeader("Terrain")) {
+				if (ImGui::DragFloat("Scale", &terrainTransform.scale.x, 0.05f)) {
+					terrainTransform.scale.y = terrainTransform.scale.x;
+					terrainTransform.scale.z = terrainTransform.scale.x;
+				}
+			}
+
+
 			// Lighting
 			if (ImGui::CollapsingHeader("Lighting")) {
 				ImGui::Checkbox("Render Lights", &appSettings.renderLights);
@@ -489,7 +498,7 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 	camera.fov = 60.0f;
 	camera.orthoHeight = 6.0f;
 	camera.nearPlane = 0.1f;
-	camera.farPlane = 100.0f;
+	camera.farPlane = 250.0f;
 	camera.orthographic = false;
 
 	cameraController.yaw = 0.0f;
