@@ -32,11 +32,13 @@ namespace jsc {
 	/// <param name="dir">Direction wave is traveling in</param>
 	struct GWave {
 		float l, s;	
+		float g = 9.8;
 		ew::Vec2 dir;
 		float alpha = 1;
 		float blend = 1;
 		ew::Vec3 clr;
 
+		GWave::GWave();
 		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color);
 		GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color, float _alpha, float lightBlend);
 

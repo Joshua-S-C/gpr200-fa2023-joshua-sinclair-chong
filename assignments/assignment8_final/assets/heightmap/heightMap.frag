@@ -8,9 +8,6 @@ in Surface{
 	vec3 WaveClr;
 }fs_in;
 
-uniform float alpha;
-uniform float blend;
-
 struct Light {
 	vec3 pos; // World Space
 	vec3 clr; // RBG
@@ -27,15 +24,14 @@ struct Material {
 #define MAX_LIGHTS 4
 uniform Light _Lights[MAX_LIGHTS];
 
+uniform sampler2D _Texture;
 uniform Material _Material;
 
 uniform vec3 _ViewPos;
-uniform samplerCube _Skybox;
 uniform bool _Phong;
 uniform int _NumLights;
 
 void main(){
-	// Lit Shading ----------------------------------------------------------*/
 	vec3 normal = normalize(fs_in.WorldNorm);
 	vec3 result = {0,0,0};
 
@@ -64,13 +60,5 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
-	vec3 viewDir = normalize(_ViewPos - fs_in.WorldPos);
-	vec3 skyboxReflect = reflect(viewDir, normalize(fs_in.WorldNorm));
-
-	FragColor = vec4(fs_in.WaveClr, alpha) * vec4(result, blend);
-	//FragColor = vec4(fs_in.WaveClr * result, 1.0);
-	//FragColor = vec4(fs_in.WaveClr, alpha) + vec4(result, blend);
-	//FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
-	//FragColor = texture(_Skybox,fs_in.WorldPos) * vec4(result, 1.0);
-	FragColor *= vec4(texture(_Skybox,skyboxReflect).rbg, blend);
+	FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
 }

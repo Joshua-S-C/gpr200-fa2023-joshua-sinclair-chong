@@ -38,11 +38,18 @@ namespace jsc {
 		ew::Mesh mesh;
 		ew::Transform transform;
 		unsigned int texture;
+		//const char* filePath = "skybox2";
 		const char* faces[6] = {
-			"assets/skybox/right.jpg",	"assets/skybox/left.jpg", 
-			"assets/skybox/top.jpg",	"assets/skybox/bottom.jpg", 
-			"assets/skybox/front.jpg",	"assets/skybox/back.jpg"
+			"assets/skybox/texture1/right.jpg",	"assets/skybox/texture1/left.jpg", 
+			"assets/skybox/texture1/top.jpg",	"assets/skybox/texture1/bottom.jpg", 
+			"assets/skybox/texture1/front.jpg",	"assets/skybox/texture1/back.jpg"
 			};
+
+		//const char* faces[6] = {
+		//	"assets/skybox2/right.png",	"assets/skybox2/left.png",
+		//	"assets/skybox2/top.png",	"assets/skybox2/bottom.png",
+		//	"assets/skybox2/front.png",	"assets/skybox2/back.png"
+		//};
 
 		Skybox::Skybox() {
 			//shader.reload("assets/skybox.vert", "assets/skybox.frag");

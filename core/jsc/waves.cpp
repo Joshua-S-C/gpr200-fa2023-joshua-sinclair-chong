@@ -23,6 +23,17 @@ namespace jsc {
 		return derived;
 	}
 
+	// Gerstner Waves
+	GWave::GWave() {
+		l = 10;
+		s = 0.3;
+		g = 9.8;
+		dir = ew::Vec2{ 0.0, 0.5 };
+		clr = ew::Vec3{ .5f,.8f,1 };
+		alpha = 1;
+		alpha = 1;
+	}
+
 	GWave::GWave(float wavelength, float steepness, ew::Vec2 direction, ew::Vec3 color){
 		l = wavelength;
 		s = steepness;

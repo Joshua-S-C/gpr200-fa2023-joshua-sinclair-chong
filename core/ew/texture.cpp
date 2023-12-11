@@ -2,6 +2,7 @@
 #include "external/glad.h"
 #include "external/stb_image.h"
 
+
 static int getTextureFormat(int numComponents) {
 	switch (numComponents) {
 	default:

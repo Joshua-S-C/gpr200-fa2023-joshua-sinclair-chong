@@ -16,7 +16,7 @@ uniform mat4 _ViewProjection;
 uniform vec3 _WorldNorm;
 
 struct Wave {
-	float l, s;
+	float l, s, g;
 	vec2 dir;
 	vec3 clr;	// I actually dont need this
 	// Maybe add a gravity variable
@@ -29,9 +29,9 @@ uniform int _NumWaves;
 vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binormal) {
 	// Used in Calcs --------------------------------------------------------*/
 	float k = 2 * radians(180) / wave.l;				// Wave Number
-	float c = sqrt(9.8 / k);							// Speed
+	float c = sqrt(wave.g / k);							// Speed
 	vec2 d = normalize(wave.dir);						// Direction normalized
-	float f = k * (dot(d, vPos.xz) - c * _Time);	// Frequency
+	float f = k * (dot(d, vPos.xz) - c * _Time);		// Frequency
 	float a = _wave.s / k;								// Amplitude
 
 	// Normals --------------------------------------------------------------*/

@@ -234,4 +234,69 @@ namespace ew {
 		}
 		return mesh;
 	}
+
+	/// <summary>
+	/// Creates a heightmap
+	/// </summary>
+	/// <param name="filePath">Path to image</param>
+	/// <returns></returns>
+	MeshData createHeightmap(const char* filePath, float yScale, float yShift) {
+		int width, height, numComponents;
+		unsigned char* data = stbi_load(filePath, &width, &height, &numComponents, 0);
+		MeshData mesh;
+
+		if (data == NULL) {
+			printf("Failed to load image %s", filePath);
+			stbi_image_free(data);
+			return mesh;
+		}
+
+		// Vertices
+		for (int row = 0; row < height; row++)
+			for (int col = 0; col < width; col++) {
+				Vertex v;
+
+				// Get Texel @ (row,col)
+				unsigned char* texel = data + (col + width * row) * numComponents;
+				// Get height from texel
+				v.pos.y = (float)texel[0] * yScale - yShift;
+
+				v.pos.x = ( - height / 2.0f + row) / 10;
+				v.pos.z = ( - width / 2.0f + col) / 10;
+
+				//v.pos.x = -width / 2 + width * v.uv.x;
+				//v.pos.z = height / 2 - height * v.uv.y;
+
+				v.uv.x = ((float)col / width);
+				v.uv.y = ((float)row / height);
+				v.normal = ew::Vec3(0, 1, 0);
+
+				mesh.vertices.push_back(v);
+			}
+
+		// Indices
+		for (size_t row = 0; row < height; row++)
+		{
+			for (size_t col = 0; col < width; col++)
+			{
+				int start = row * width + col;
+				mesh.indices.push_back(start);
+				mesh.indices.push_back(start + 1);
+				mesh.indices.push_back(start + width + 1);
+				mesh.indices.push_back(start + width + 1);
+				mesh.indices.push_back(start + width);
+				mesh.indices.push_back(start);
+			}
+		}
+
+		stbi_image_free(data);
+
+		printf("Loaded Heightmap: ");
+		printf(filePath);
+		printf("\n");
+
+		return mesh;
+	}
+
+
 }
