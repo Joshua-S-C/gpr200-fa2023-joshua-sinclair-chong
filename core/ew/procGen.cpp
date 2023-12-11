@@ -275,9 +275,9 @@ namespace ew {
 			}
 
 		// Indices
-		for (size_t row = 0; row < height; row++)
+		for (size_t row = 0; row < height-1; row++)
 		{
-			for (size_t col = 0; col < width; col++)
+			for (size_t col = 0; col < width-1; col++)
 			{
 				int start = row * width + col;
 				mesh.indices.push_back(start);

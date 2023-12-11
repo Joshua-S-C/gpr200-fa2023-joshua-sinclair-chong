@@ -64,7 +64,7 @@ struct AppSettings {
 
 	bool lit = true;
 	bool phong = false;
-	bool wireframe = true;
+	bool wireframe = false;
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
 	bool renderLights = true;
@@ -217,8 +217,8 @@ int main() {
 
 		// Render Terrain
 		terrainShader.use();
-		glBindTexture(GL_TEXTURE_2D, terrainTexture);
-		terrainShader.setInt("_Texture", 0);
+		//glBindTexture(GL_TEXTURE_2D, terrainTexture);
+		//terrainShader.setInt("_Texture", 0);
 		terrainShader.setMaterial("_Material", mat);
 
 		terrainShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
