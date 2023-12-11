@@ -131,11 +131,13 @@ int main() {
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 
 // Initializations for Terrain ------------------------------------------*/
-	ew::Mesh terrainMesh(ew::createHeightmap("assets/heightmap/iceland_heightmap.png"));
+	ew::Mesh terrainMesh(ew::createHeightmap("assets/heightmap/lake_champlain_height_highres.png", 1, 2.0f));
 	ew::Shader terrainShader("assets/heightmap/heightmap.vert", "assets/heightmap/heightmap.frag");
 	ew::Transform terrainTransform;
-	terrainTransform.position = {0, 3, 0};
-	unsigned int terrainTexture = ew::loadTexture("assets/heightmap/literallyGmaps.jpg", GL_REPEAT, GL_LINEAR);
+	terrainTransform.position = {0,29.5, 0};
+	jsc::Material terrainMat(.4, .2, .7, 32); // Material for terrain
+
+	unsigned int terrainTexture = ew::loadTexture("assets/heightmap/lake_champlain_texture.png", GL_REPEAT, GL_LINEAR);
 
 // Initializations for Lights -------------------------------------------*/
 	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
@@ -151,18 +153,6 @@ int main() {
 // Initializations for Skybox -------------------------------------------*/
 	jsc::Skybox skybox;
 	ew::Shader skyboxShader("assets/skybox/skybox.vert", "assets/skybox/skybox.frag");
-
-
-	// Other objects
-
-	//ew::Mesh sphereMesh(ew::createSphere(0.5f, 64));
-	//ew::Mesh cylinderMesh(ew::createCylinder(0.5f, 1.0f, 32));
-	//ew::Transform sphereTransform;
-	//ew::Transform cylinderTransform;
-	//ew::Transform torusTransform;
-	//sphereTransform.position = ew::Vec3(-1.5f, 0.0f, 0.0f);
-	//cylinderTransform.position = ew::Vec3(1.5f, 0.0f, 0.0f);
-
 
 // Render Loop ----------------------------------------------------------*/
 	resetCamera(camera,cameraController);
@@ -217,9 +207,9 @@ int main() {
 
 		// Render Terrain
 		terrainShader.use();
-		//glBindTexture(GL_TEXTURE_2D, terrainTexture);
-		//terrainShader.setInt("_Texture", 0);
-		terrainShader.setMaterial("_Material", mat);
+		glBindTexture(GL_TEXTURE_2D, terrainTexture);
+		terrainShader.setInt("_Texture", 0);
+		terrainShader.setMaterial("_Material", terrainMat);
 
 		terrainShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		terrainShader.setVec3("_ViewPos", camera.position);
@@ -367,6 +357,8 @@ int main() {
 					terrainTransform.scale.y = terrainTransform.scale.x;
 					terrainTransform.scale.z = terrainTransform.scale.x;
 				}
+				ImGui::DragFloat3("T-Position", &terrainTransform.position.x, 0.1f);
+
 			}
 
 
@@ -392,7 +384,7 @@ int main() {
 					planeMesh = planeMesh;
 				}
 
-				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 100)) {
+				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 1000)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
@@ -498,11 +490,12 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 	camera.fov = 60.0f;
 	camera.orthoHeight = 6.0f;
 	camera.nearPlane = 0.1f;
-	camera.farPlane = 250.0f;
+	camera.farPlane = 500.0f;
 	camera.orthographic = false;
 
 	cameraController.yaw = 0.0f;
 	cameraController.pitch = 0.0f;
+	cameraController.sprintMoveSpeed = 50.0f;
 }
 
 /// <summary>

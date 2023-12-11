@@ -39,7 +39,7 @@ void main(){
 		// Ambient
 		float ambient = _Material.ambientK;
 
-		// Diffuse
+		// Diffuseee
 		vec3 lightDir = normalize(_Lights[i].pos - fs_in.WorldPos);
 		float diffuse = _Material.diffuseK * max(dot(normal, lightDir), 0.0);
 	
@@ -60,7 +60,7 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
-	float height = ((fs_in.WorldPos.y + 32) / 100);
-	FragColor = vec4(0, 0, height, 1.0);
-	//FragColor = texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+	float height = ((fs_in.WorldPos.y + 10) / 50);
+	FragColor = vec4(0, height, 0, 1.0);
+	//FragColor += texture(_Texture,fs_in.UV) * vec4(result, 1.0);
 }

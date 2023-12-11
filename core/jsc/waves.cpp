@@ -51,7 +51,7 @@ namespace jsc {
 	}
 
 	GWave GWave::derive() {
-		jsc::GWave derived(l / 1.7, s / 3, dir + ew::Vec2(0.3, .2), clr);
+		jsc::GWave derived(l / 1.7, s / 3, dir + ew::Vec2(0.3, .4), clr);
 		return derived;
 	}
 

@@ -29,7 +29,7 @@ void main(){
 	vs_out.WaveClr = _wave.clr;
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 	
-	float k = 2 * radians(180) / _wave.l;
+	float k = 2 * radians(180) / _wave.l;		// Wave Number
 	float f = k * (vPos.x - _Time * _wave.s);
 
 	// Normal Calc ----------------------------------------------------------*/

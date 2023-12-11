@@ -247,6 +247,7 @@ namespace ew {
 
 		if (data == NULL) {
 			printf("Failed to load image %s", filePath);
+			printf("\n");
 			stbi_image_free(data);
 			return mesh;
 		}
