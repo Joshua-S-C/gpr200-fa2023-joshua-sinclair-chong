@@ -36,8 +36,10 @@ namespace jsc {
 	struct GWave {
 		float l, s;	
 		float g = 9.8;
+		float alpha = .45f;
 		ew::Vec2 dir;
-		float alpha = 1;
+
+		// Currently unused
 		float blend = 1;
 		ew::Vec3 clr;
 

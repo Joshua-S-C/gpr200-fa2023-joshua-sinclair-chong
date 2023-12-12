@@ -116,7 +116,7 @@ int main() {
 	jsc::Material mat(.02, .3, .9, 32);
 
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
-	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.1 }, ew::Vec3{ .5f,.8f,1 }, 0.7f, 1);
+	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.1 }, ew::Vec3{ .5f,.8f,1 }, 0.45f, .05f);
 
 	jsc::GWave gWaves[MAX_WAVES];
 	gerstnerWave.populate(gWaves, MAX_WAVES);

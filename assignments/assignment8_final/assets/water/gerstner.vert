@@ -30,7 +30,7 @@ vec3 gerstner(in Wave wave, in vec3 vPos, inout vec3 tangent, inout vec3 binorma
 	float k = 2 * radians(180) / wave.l;				// Wave Number
 	float c = sqrt(wave.g / k);							// Speed
 	vec2 d = normalize(wave.dir);						// Direction normalized
-	float f = k * (dot(d, vPos.xz) - c * _Time);		// Frequency
+	float f = k * (dot(d, vPos.xz) - c * _Time);		// Determines effect of dir
 	float a = _wave.s / k;								// Amplitude
 
 	// Normals --------------------------------------------------------------*/
