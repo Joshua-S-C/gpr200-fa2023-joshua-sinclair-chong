@@ -31,10 +31,13 @@ uniform vec3 _ViewPos;
 uniform bool _Phong;
 uniform int _NumLights;
 
+uniform bool _UseTexture;
+
 void main(){
 	vec3 normal = normalize(fs_in.WorldNorm);
 	vec3 result = {0,0,0};
 
+	// Lights
 	for (int i = 0; i < _NumLights; i++) {
 		// Ambient
 		float ambient = _Material.ambientK;
@@ -60,7 +63,10 @@ void main(){
 		result += (ambient + diffuse + specular) * _Lights[i].clr;
 	}
 
-	float height = ((fs_in.WorldPos.y + 10) / 50);
-	FragColor = vec4(0, height, 0, 1.0);
-	//FragColor += texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+	if (_UseTexture) {
+		FragColor += texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+	} else {
+		float height = ((fs_in.WorldPos.y + 10) / 40);
+		FragColor = vec4(0, height, 0, 1.0);
+	}
 }

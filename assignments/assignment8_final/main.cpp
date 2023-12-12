@@ -23,10 +23,10 @@
 #include <jsc/waves.h>
 
 #define MAX_LIGHTS 4
-#define MAX_WAVES 6
+#define MAX_WAVES 10
 
-int numLights = MAX_LIGHTS;
-int numWaves = MAX_WAVES;
+int numLights = 2;
+int numWaves = 4;
 
 int numFrames = 0;
 float timePerFrame = 0;
@@ -47,7 +47,7 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController);
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time);
 
 struct AppSettings {
-	const char* shaderTypeNames[2] = { "SimpleSin", "Gerstner"};
+	const char* shaderTypeNames[2] = { "Simple Sin", "Gerstner"};
 	int waterShaderIndex = 1;
 	const char* vertPaths[2] = { "assets/water/simpleSin.vert", "assets/water/gerstner.vert" };
 	const char* fragPaths[2] = { "assets/water/simpleSin.frag", "assets/water/gerstner.frag" };
@@ -56,7 +56,7 @@ struct AppSettings {
 	int shadingModeIndex = 0;
 
 	ew::Vec3 bgColor = ew::Vec3(0.1f);
-	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
+//	ew::Vec3 shapeColor = ew::Vec3(1.0f);	//Unsused
 	
 	int blendModeIndex = 7;
 	int blendModes[20] = 
@@ -68,6 +68,7 @@ struct AppSettings {
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
 	bool renderLights = true;
+	bool renderTerrain = true;
 }appSettings;
 
 ew::Camera camera;
@@ -107,35 +108,32 @@ int main() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 
+	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR);  // this is just here lol incase i want to look at lovely bricks
 // Initializations for Waves --------------------------------------------*/
-	unsigned int brickTexture = ew::loadTexture("assets/brick_color.jpg",GL_REPEAT,GL_LINEAR); 
-	// this is just here lol incase i want to look at lovely bricks
 
 	ew::Shader shader("assets/water/gerstner.vert", "assets/water/gerstner.frag");	// Wave shader
-	jsc::Material mat(.05, .2, .7, 32);										// Material for waves
+	jsc::Material mat(.02, .3, .9, 32);
 
 	jsc::Wave simpleWave(2.0f, 0.3f, 1.0f, 1.0f, 1.0f, ew::Vec3{ .5f,.8f,1 });
-	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.5 }, ew::Vec3{ .5f,.8f,1 });
-	gerstnerWave.alpha = 1;
-	gerstnerWave.blend = 1;
+	jsc::GWave gerstnerWave(10.0f, 0.3f, ew::Vec2{ 0.0, 0.1 }, ew::Vec3{ .5f,.8f,1 }, 0.7f, 1);
 
 	jsc::GWave gWaves[MAX_WAVES];
-
 	gerstnerWave.populate(gWaves, MAX_WAVES);
 
 	// Mesh
-	int planeSubdivs = 100;
-	float planeSize = 20.0f;
+	int planeSubdivs = 600;
+	float planeSize = 200.0f;
 	ew::Mesh planeMesh(ew::createPlane(planeSize, planeSize, planeSubdivs));
 	ew::Transform planeTransform;
 	planeTransform.position = ew::Vec3(0, -1.0, 0);
 
 // Initializations for Terrain ------------------------------------------*/
-	ew::Mesh terrainMesh(ew::createHeightmap("assets/heightmap/lake_champlain_height_highres.png", 1, 2.0f));
 	ew::Shader terrainShader("assets/heightmap/heightmap.vert", "assets/heightmap/heightmap.frag");
-	ew::Transform terrainTransform;
-	terrainTransform.position = {0,29.5, 0};
 	jsc::Material terrainMat(.4, .2, .7, 32); // Material for terrain
+	ew::Transform terrainTransform;
+	ew::Mesh terrainMesh(ew::createHeightmap("assets/heightmap/lake_champlain_height_highres.png", 1, 2.0f));
+	terrainTransform.position = {0,29.5, 0};
+	bool useTerrainTexture = false;
 
 	unsigned int terrainTexture = ew::loadTexture("assets/heightmap/lake_champlain_texture.png", GL_REPEAT, GL_LINEAR);
 
@@ -143,7 +141,7 @@ int main() {
 	ew::Shader lightsShader("assets/lights.vert", "assets/lights.frag");
 	ew::Mesh lightMesh(ew::createSphere(0.2f, 32));
 	jsc::Light lights[4];
-	lights[0].transform.position = { 0,0,0 };
+	lights[0].transform.position = { 100,20,5 };
 	lights[0].clr = { 1,1,1 };
 	for (int i = 1; i < numLights; i++) {
 		lights[i].transform.position = { (float)(2 * (i % 2) - 1),1,(float)(2 * (int)(i < 2) - 1) };
@@ -167,11 +165,12 @@ int main() {
 		float lastTime = 0;
 		frameRate(timePerFrame, numFrames, lastTime, time);
 
-		//Update camera
+		// Update camera & Skybox
 		camera.aspectRatio = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
 		cameraController.Move(window, &camera, deltaTime);
+		skybox.UpdatePosition(camera.position);
 
-		//RENDER
+		// RENDER
 		glClearColor(appSettings.bgColor.x, appSettings.bgColor.y, appSettings.bgColor.z,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -182,12 +181,10 @@ int main() {
 
 		skyboxShader.use();
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.texture);
-
 		skyboxShader.setInt("_Texture", 0);
 		skyboxShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		skyboxShader.setMat4("_Model", skybox.transform.getModelMatrix());
 		
-		skybox.UpdatePosition(camera.position);
 		skybox.mesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		
 		// Reset GL settings after skybox
@@ -206,24 +203,27 @@ int main() {
 		}
 
 		// Render Terrain
-		terrainShader.use();
-		glBindTexture(GL_TEXTURE_2D, terrainTexture);
-		terrainShader.setInt("_Texture", 0);
-		terrainShader.setMaterial("_Material", terrainMat);
+		if (appSettings.renderTerrain) {
+			terrainShader.use();
+			terrainShader.setInt("_UseTexture", useTerrainTexture);
+			glBindTexture(GL_TEXTURE_2D, terrainTexture);
+			terrainShader.setInt("_Texture", 0);
+			terrainShader.setMaterial("_Material", terrainMat);
 
-		terrainShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
-		terrainShader.setVec3("_ViewPos", camera.position);
-		terrainShader.setMat4("_Model", terrainTransform.getModelMatrix());
+			terrainShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
+			terrainShader.setVec3("_ViewPos", camera.position);
+			terrainShader.setMat4("_Model", terrainTransform.getModelMatrix());
 
-		terrainShader.setInt("_Mode", appSettings.shadingModeIndex);
-		terrainShader.setBool("_Phong", appSettings.phong);
-		terrainShader.setInt("_NumLights", numLights);
-		for (int i = 0; i < numLights; i++) {
-			terrainShader.setVec3("_Lights[" + std::to_string(i) + "].pos", lights[i].transform.position);
-			terrainShader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
+			terrainShader.setInt("_Mode", appSettings.shadingModeIndex);
+			terrainShader.setBool("_Phong", appSettings.phong);
+			terrainShader.setInt("_NumLights", numLights);
+			for (int i = 0; i < numLights; i++) {
+				terrainShader.setVec3("_Lights[" + std::to_string(i) + "].pos", lights[i].transform.position);
+				terrainShader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
+			}
+
+			terrainMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		}
-
-		terrainMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 
 		// Render Waves
 		shader.use();
@@ -247,7 +247,7 @@ int main() {
 
 		shader.setInt("_Mode", appSettings.shadingModeIndex);
 		shader.setFloat("_Time", (float)glfwGetTime());
-		shader.setVec3("_UnshadedColor", simpleWave.clr); //todo fix this
+		shader.setVec3("_UnshadedColor", simpleWave.clr);
 		
 		shader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 		shader.setVec3("_ViewPos", camera.position);
@@ -274,13 +274,12 @@ int main() {
 			ImGui::Begin("Settings", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 
 
-			// Debug Text
-			bool debug;
-			ImGui::Checkbox("Debug List", &debug);
-			if (debug) {
-				ImGui::Text(std::to_string(timePerFrame).c_str());
-				ImGui::Text(std::to_string(appSettings.lit).c_str());
-			}
+			//// Debug Text
+			//bool debug;
+			//ImGui::Checkbox("Debug List", &debug);
+			//if (debug) {
+			//	ImGui::Text(std::to_string(appSettings.lit).c_str());
+			//}
 
 			// Change # of Waves (duh.)
 			ImGui::SliderInt("# of Waves", &numWaves, 0, MAX_WAVES);
@@ -316,14 +315,16 @@ int main() {
 					if (ImGui::CollapsingHeader("Gerstner Wave Properties")) {
 						ImGui::DragFloat("Alpha", &gWaves[0].alpha, 0.01f, 0, 10);
 						ImGui::DragFloat("Blend", &gWaves[0].blend, 0.01f, 0, 10);
+						ImGui::Spacing();
 
 						for (int i = 0; i < numWaves; i++) {
 							ImGui::PushID(i);
 							ImGui::DragFloat("Wavelength", &gWaves[i].l, 0.01f, 0, 10);
-							ImGui::DragFloat("Steepness", &gWaves[i].s, 0.01f, 0, 10);
 							ImGui::DragFloat("Gravity", &gWaves[i].g, 0.01f, 0, 10);
 							ImGui::DragFloat2("Direction", &gWaves[i].dir.x, 0.01f, 0, 10);
+							ImGui::Spacing();
 
+							//ImGui::DragFloat("Steepness", &gWaves[i].s, 0.01f, 0, 10);
 							//ImGui::ColorEdit3("Colour", &gWaves[i].clr.x);
 							ImGui::PopID();
 						}
@@ -351,17 +352,6 @@ int main() {
 					glBlendFunc(GL_SRC_ALPHA, appSettings.blendModes[appSettings.blendModeIndex]);
 			}
 
-			// Terrain
-			if (ImGui::CollapsingHeader("Terrain")) {
-				if (ImGui::DragFloat("Scale", &terrainTransform.scale.x, 0.05f)) {
-					terrainTransform.scale.y = terrainTransform.scale.x;
-					terrainTransform.scale.z = terrainTransform.scale.x;
-				}
-				ImGui::DragFloat3("T-Position", &terrainTransform.position.x, 0.1f);
-
-			}
-
-
 			// Lighting
 			if (ImGui::CollapsingHeader("Lighting")) {
 				ImGui::Checkbox("Render Lights", &appSettings.renderLights);
@@ -377,14 +367,25 @@ int main() {
 				}
 			}
 
+			// Terrain
+			if (ImGui::CollapsingHeader("Terrain")) {
+				ImGui::Checkbox("Use Texture", &useTerrainTexture);
+				if (ImGui::DragFloat("Scale", &terrainTransform.scale.x, 0.05f)) {
+					terrainTransform.scale.y = terrainTransform.scale.x;
+					terrainTransform.scale.z = terrainTransform.scale.x;
+				}
+				ImGui::DragFloat3("T-Position", &terrainTransform.position.x, 0.1f);
+
+			}
+
 			// Plane Properties
-			if (ImGui::CollapsingHeader("Mesh")) {
-				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 1000)) {
+			if (ImGui::CollapsingHeader("Plane")) {
+				if (ImGui::SliderInt("Plane Subdivs", &planeSubdivs, 3, 1500)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
 
-				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 1000)) {
+				if (ImGui::SliderFloat("Plane Size", &planeSize, 1, 1500)) {
 					planeMesh = ew::createPlane(planeSize, planeSize, planeSubdivs);
 					planeMesh = planeMesh;
 				}
@@ -430,7 +431,7 @@ int main() {
 }
 
 
-/* Wave Helper Functions ------------------------------------------------*/
+// Wave Helper Functions ------------------------------------------------*/
 
 /// <summary>
 /// Simple waves. Sets all relevant uniforms 
@@ -490,7 +491,7 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 	camera.fov = 60.0f;
 	camera.orthoHeight = 6.0f;
 	camera.nearPlane = 0.1f;
-	camera.farPlane = 500.0f;
+	camera.farPlane = 1000.0f;
 	camera.orthographic = false;
 
 	cameraController.yaw = 0.0f;
@@ -500,6 +501,7 @@ void resetCamera(ew::Camera& camera, ew::CameraController& cameraController) {
 
 /// <summary>
 /// Calcs the number of ms between drawing frames
+/// I forgot about this, it doens't work.
 /// </summary>
 void frameRate(float& timePerFrame, int& numFrames, float& lastTime, float time) {
 	//printf(std::to_string(numFrames).c_str());

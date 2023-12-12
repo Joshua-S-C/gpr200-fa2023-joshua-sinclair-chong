@@ -43,7 +43,7 @@ void main(){
 	// Lights
 	for (int i = 0; i < _NumLights; i++) {
 		// Ambient
-		float ambient = _Material.ambientK;
+		//float ambient = _Material.ambientK;
 
 		// Diffuse
 		vec3 lightDir = normalize(_Lights[i].pos - fs_in.WorldPos);

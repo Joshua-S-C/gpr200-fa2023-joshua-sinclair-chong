@@ -29,7 +29,10 @@ namespace jsc {
 	/// </summary>
 	/// <param name="l">Wavelength</param>
 	/// <param name="s">Steepness</param>
+	/// <param name="g">Gravity</param>
 	/// <param name="dir">Direction wave is traveling in</param>
+	/// <param name="alpha">It's in the name ._.</param>
+	/// <param name="blend">Currently unused</param>
 	struct GWave {
 		float l, s;	
 		float g = 9.8;

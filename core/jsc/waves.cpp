@@ -51,7 +51,7 @@ namespace jsc {
 	}
 
 	GWave GWave::derive() {
-		jsc::GWave derived(l / 1.7, s / 3, dir + ew::Vec2(0.3, .4), clr);
+		jsc::GWave derived(l / 1.7, s / 3, ew::Vec2(1 + sin(dir.x), 10 * cos(dir.y)), clr);
 		return derived;
 	}
 
@@ -65,13 +65,4 @@ namespace jsc {
 	}
 
 	// TODO: Wave presets maybe
-
-	// Moved to main.cpp
-	// TODO: Put in shader.cpp plz
-	//void setWave(ew::Shader* shader, const char* name, jsc::Wave){
-	//	shader->setFloat(name,wave.a);
-	//	shader->setFloat(name,wave.f);
-	//	shader->setVec3(name,wave.clr);
-	//}
-
 }
