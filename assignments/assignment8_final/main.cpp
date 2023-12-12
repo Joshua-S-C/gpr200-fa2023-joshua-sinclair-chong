@@ -67,8 +67,9 @@ struct AppSettings {
 	bool wireframe = false;
 	bool drawAsPoints = false;
 	bool backFaceCulling = true;
-	bool renderLights = true;
-	bool renderTerrain = true;
+
+	bool renderLights = false;
+	bool renderTerrain = false;
 }appSettings;
 
 ew::Camera camera;
@@ -76,7 +77,7 @@ ew::CameraController cameraController;
 
 int main() {
 // Initialize Window and Stuf -------------------------------------------*/
-	printf("Initializing...\n");
+	printf("Salut\n");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
 		return 1;
@@ -129,12 +130,11 @@ int main() {
 
 // Initializations for Terrain ------------------------------------------*/
 	ew::Shader terrainShader("assets/heightmap/heightmap.vert", "assets/heightmap/heightmap.frag");
-	jsc::Material terrainMat(.4, .2, .7, 32); // Material for terrain
+	//jsc::Material terrainMat(.4, .2, .7, 32); // Material for terrain
 	ew::Transform terrainTransform;
 	ew::Mesh terrainMesh(ew::createHeightmap("assets/heightmap/lake_champlain_height_highres.png", 1, 2.0f));
 	terrainTransform.position = {0,29.5, 0};
 	bool useTerrainTexture = false;
-
 	unsigned int terrainTexture = ew::loadTexture("assets/heightmap/lake_champlain_texture.png", GL_REPEAT, GL_LINEAR);
 
 // Initializations for Lights -------------------------------------------*/
@@ -208,19 +208,20 @@ int main() {
 			terrainShader.setInt("_UseTexture", useTerrainTexture);
 			glBindTexture(GL_TEXTURE_2D, terrainTexture);
 			terrainShader.setInt("_Texture", 0);
-			terrainShader.setMaterial("_Material", terrainMat);
 
 			terrainShader.setMat4("_ViewProjection", camera.ProjectionMatrix() * camera.ViewMatrix());
 			terrainShader.setVec3("_ViewPos", camera.position);
 			terrainShader.setMat4("_Model", terrainTransform.getModelMatrix());
 
 			terrainShader.setInt("_Mode", appSettings.shadingModeIndex);
-			terrainShader.setBool("_Phong", appSettings.phong);
-			terrainShader.setInt("_NumLights", numLights);
-			for (int i = 0; i < numLights; i++) {
-				terrainShader.setVec3("_Lights[" + std::to_string(i) + "].pos", lights[i].transform.position);
-				terrainShader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
-			}
+			
+			//terrainShader.setMaterial("_Material", terrainMat);
+			//terrainShader.setBool("_Phong", appSettings.phong);
+			//terrainShader.setInt("_NumLights", numLights);
+			//for (int i = 0; i < numLights; i++) {
+			//	terrainShader.setVec3("_Lights[" + std::to_string(i) + "].pos", lights[i].transform.position);
+			//	terrainShader.setVec3("_Lights[" + std::to_string(i) + "].clr", lights[i].clr);
+			//}
 
 			terrainMesh.draw((ew::DrawMode)appSettings.drawAsPoints);
 		}
@@ -369,6 +370,7 @@ int main() {
 
 			// Terrain
 			if (ImGui::CollapsingHeader("Terrain")) {
+				ImGui::Checkbox("Render Terrain", &appSettings.renderTerrain);
 				ImGui::Checkbox("Use Texture", &useTerrainTexture);
 				if (ImGui::DragFloat("Scale", &terrainTransform.scale.x, 0.05f)) {
 					terrainTransform.scale.y = terrainTransform.scale.x;
@@ -427,7 +429,7 @@ int main() {
 
 		glfwSwapBuffers(window);
 	}
-	printf("Shutting down...");
+	printf("Sayonara\n");
 }
 
 

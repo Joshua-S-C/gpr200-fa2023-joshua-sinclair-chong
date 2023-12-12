@@ -46,9 +46,9 @@ namespace jsc {
 			};
 
 		//const char* faces[6] = {
-		//	"assets/skybox2/right.png",	"assets/skybox2/left.png",
-		//	"assets/skybox2/top.png",	"assets/skybox2/bottom.png",
-		//	"assets/skybox2/front.png",	"assets/skybox2/back.png"
+		//	"assets/skybox/texture2/right.png",	"assets/skybox/texture2/left.png",
+		//	"assets/skybox/texture2/top.png",	"assets/skybox/texture2/bottom.png",
+		//	"assets/skybox/texture2/front.png",	"assets/skybox/texture2/back.png"
 		//};
 
 		Skybox::Skybox() {

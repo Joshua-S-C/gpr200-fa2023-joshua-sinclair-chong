@@ -68,7 +68,7 @@ void main(){
 
 	
 	// Ambient
-	vec3 ambientClr = {1,1,1};
+	vec3 ambientClr = {.3,.3,1};
 	vec3 ambient = _Material.ambientK * ambientClr;
 	result += ambient;
 

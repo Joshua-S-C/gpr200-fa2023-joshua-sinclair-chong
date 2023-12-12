@@ -8,28 +8,25 @@ in Surface{
 	vec3 WaveClr;
 }fs_in;
 
-struct Light {
-	vec3 pos; // World Space
-	vec3 clr; // RBG
-};
-
-struct Material {
-	// K = Coefficients. 0-1.
-	float ambientK;
-	float diffuseK; 
-	float specularK;
-	float shininess;
-};
-
-#define MAX_LIGHTS 4
-uniform Light _Lights[MAX_LIGHTS];
+//struct Light {
+//	vec3 pos; // World Space
+//	vec3 clr; // RBG
+//};
+//
+//struct Material {
+//	// K = Coefficients. 0-1.
+//	float ambientK;
+//	float diffuseK; 
+//	float specularK;
+//	float shininess;
+//};
+//
+//#define MAX_LIGHTS 4
+//uniform Light _Lights[MAX_LIGHTS];
 
 uniform sampler2D _Texture;
-uniform Material _Material;
 
 uniform vec3 _ViewPos;
-uniform bool _Phong;
-uniform int _NumLights;
 
 uniform bool _UseTexture;
 
@@ -37,34 +34,8 @@ void main(){
 	vec3 normal = normalize(fs_in.WorldNorm);
 	vec3 result = {0,0,0};
 
-	// Lights
-	for (int i = 0; i < _NumLights; i++) {
-		// Ambient
-		float ambient = _Material.ambientK;
-
-		// Diffuseee
-		vec3 lightDir = normalize(_Lights[i].pos - fs_in.WorldPos);
-		float diffuse = _Material.diffuseK * max(dot(normal, lightDir), 0.0);
-	
-		// Specular
-		float specular;
-		vec3 viewDir = normalize(_ViewPos - fs_in.WorldPos);
-
-		if (_Phong) {
-			// Phong
-			vec3 reflectVec = 2 * dot(lightDir, normal) * normal - lightDir;
-			specular = _Material.specularK * pow(max(dot(reflectVec, normal), 0.0), _Material.shininess);
-		} else {
-			// Blin Phong
-			vec3 halfVec = normalize(lightDir + viewDir);
-			specular = _Material.specularK * pow(max(dot(halfVec, normal), 0.0), _Material.shininess);
-		}
-
-		result += (ambient + diffuse + specular) * _Lights[i].clr;
-	}
-
 	if (_UseTexture) {
-		FragColor += texture(_Texture,fs_in.UV) * vec4(result, 1.0);
+		FragColor = texture(_Texture,fs_in.UV);
 	} else {
 		float height = ((fs_in.WorldPos.y + 10) / 40);
 		FragColor = vec4(0, height, 0, 1.0);

@@ -59,8 +59,8 @@ void main(){
 	vs_out.WaveClr = _waves[0].clr; // Uneeded
 	vs_out.WorldPos = vec3(_Model  * vec4(vPos, 1.0));
 
-	vec3 tangent = {1, 0, 0};	// 
-	vec3 binormal = {0, 0, 1};	// 
+	vec3 tangent = {1, 0, 0};	// Initialization
+	vec3 binormal = {0, 0, 1};	// Initialization
 	vec3 undulate = {0,0,0};	// Offset of verts
 
 	for(int i = 0; i < _NumWaves; i++){
